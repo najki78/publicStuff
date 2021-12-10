@@ -21,7 +21,7 @@ Write-Output "Connected..."
 #   It will look like the following where the guid at the end corresponds to the id:
 #  https://devicemanagement.microsoft.com/#blade/Microsoft_Intune_Apps/SettingsMenu/0/appId/0a2b8969-24c9-4305-bbc1-e3cc2562c29b
 
-$mobileApp= Get-IntuneMobileApp -mobileAppId "67b28934-9238-400e-a533-c27a0319d4a0"
+$mobileApp= Get-IntuneMobileApp -mobileAppId "72f21bba-daa1-4f17-8382-31d7a457baab"
 
 Write-Output "Display name: " $mobileApp.rules.displayName
 
