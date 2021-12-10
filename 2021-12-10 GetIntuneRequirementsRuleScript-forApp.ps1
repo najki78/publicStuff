@@ -15,6 +15,7 @@ Import-Module Microsoft.Graph.Intune -Global
 
 #The connection to Azure Graph
 Connect-MSGraph 
+Write-Output "Connected..." 
 
 # to get your application id you can easily use the web browser and navigate to your Intune app and copy the id from the URL.
 #   It will look like the following where the guid at the end corresponds to the id:
