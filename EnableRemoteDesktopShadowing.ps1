@@ -30,7 +30,7 @@ $registryPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server"
 $RegName = "AllowRemoteRPC"
 $value = 1
 $valueType = "DWORD"
-#Set-Registry $registryPath $RegName $value
+Set-Registry $registryPath $RegName $value
 
 $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services"
 $RegName = "Shadow"
