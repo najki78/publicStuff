@@ -1,5 +1,23 @@
 ﻿
-# source> https://github.com/okieselbach/Intune/blob/master/Convert-AzureAdSidToObjectId.ps1
+# source: https://github.com/okieselbach/Intune/blob/master/Convert-AzureAdSidToObjectId.ps1 ... Thank you!
+
+
+#Get AzureAD Module
+$m = Get-Module -Name AzureAD -ListAvailable
+
+Write-Output $m
+
+if (-not $m)
+{
+    
+    Install-Module -Name AzureAD -AllowClobber -Force 
+
+}
+
+Install-Module AzureAD
+Connect-AzureAD
+
+
 
 function Convert-AzureAdSidToObjectId {
 <#
@@ -28,8 +46,7 @@ The SID to convert
 }
 
 
-
-$sid = "S-1-12-1-3772843552-1243050329-2680718521-4134258740"
+$sid = "S-1-12-1-3355307493-1154222592-1435707025-2509201134"
 $objectId = Convert-AzureAdSidToObjectId -Sid $sid
 Write-Output $objectId
 
@@ -67,12 +84,15 @@ The Object ID to convert
 }
 
 
-$objectId = "73d664e4-0886-4a73-b745-c694da45ddb4"
+<#
+$objectId = "e0e10620-7159-4a17-b984-c89f34c86bf6"
 $sid = Convert-AzureAdObjectIdToSid -ObjectId $objectId
 Write-Output $sid
 
 # Output:
 
 # S-1-12-1-1943430372-1249052806-2496021943-3034400218
+#>
 
 
+# Get-AzureADObjectByObjectId -ObjectIds $objectId
