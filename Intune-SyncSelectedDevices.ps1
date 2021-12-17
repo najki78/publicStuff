@@ -7,7 +7,6 @@
 Connect-MSGraph
 
 
-
 #$DevicesToSync = Get-IntuneManagedDevice | Get-MSGraphAllPages | where-object {$_.managementAgent -eq 'mdm'}
 
 
