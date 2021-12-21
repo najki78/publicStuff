@@ -14,7 +14,7 @@ Connect-MSGraph
 #foreach ( $IP in $IPs){    echo $IP}
 
 
-$DevicesToSync = Get-IntuneManagedDevice -Filter "contains(deviceName,'MC256694')" 
+$DevicesToSync = Get-IntuneManagedDevice -Filter "contains(deviceName,'M5332696')" 
 #| select serialnumber, devicename, userDisplayName, userPrincipalName, id, userId, azureADDeviceId, managedDeviceOwnerType, model, manufacturer
 
 
