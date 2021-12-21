@@ -1,7 +1,8 @@
 ﻿
 # kudos to https://github.com/ztrhgf/useful_powershell_functions/blob/master/INTUNE/Get-ClientIntunePolicyResult.ps1
 
-Install-Module PSWriteHtml -Scope CurrentUser
+Install-Module 'Microsoft.Graph.Intune' #-Scope CurrentUser
+Install-Module PSWriteHtml #-Scope CurrentUser
 
 function Get-ClientIntunePolicyResult {
     <#
