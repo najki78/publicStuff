@@ -2,6 +2,8 @@
 # get scope tags for AAD devices 
 # based on https://github.com/carygarvin/Assign-DeviceScopeTags.ps1/blob/master/Assign-DeviceScopeTags.ps1 --- THANK YOU!
 
+Install-Module AzureAD
+
 
 # ***************************************************************************************************
 # ***************************************************************************************************
@@ -591,6 +593,9 @@ $ScopeTags | ForEach {$ScopeTag = $_ ; $ScopeTags2IDHT.Add($_,(Get-RBACScopeTag 
 write-host "Intune Scope Tags and corresponding IDs" -foregroundcolor "yellow"
 $ScopeTags2IDHT
 write-host
+
+$ManagedDevices = Get-ManagedDevices | Select -Last 10 deviceName,roleScopeTagIds
+$ManagedDevices
 
 <#
 
