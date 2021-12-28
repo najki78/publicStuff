@@ -142,7 +142,7 @@ Function Get-AuthToken
 
 
 # Lubos - currently filters only "Windows" devices
-Function Get-AllManagedDevices()
+Function Get-ManagedDevices()
 	{
 	<#
 	.SYNOPSIS
@@ -564,7 +564,7 @@ $csvfile = Import-Csv $outfile
 #$ManagedDevices = Get-ManagedDevices -deviceName "...."
 
 # Enumerate through all InTune Windows devices 
-$ManagedDevices = Get-AllManagedDevices 
+$ManagedDevices = Get-ManagedDevices 
 
 # https://stackoverflow.com/questions/17927525/accessing-values-of-object-properties-in-powershell
 #$ManagedDevices.hardwareInformation.psobject.properties["batteryHealthPercentage"].Value
