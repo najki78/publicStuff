@@ -172,8 +172,8 @@ Function Get-AuthToken
 	}
 
 
-
-Function Get-ManagedDevices()
+# Lubos - currently filters only "Windows" devices
+Function Get-AllManagedDevices()
 	{
 	<#
 	.SYNOPSIS
@@ -240,11 +240,29 @@ Function Get-ManagedDevices()
 			}
 		Else
 			{
-			$uri = "https://graph.microsoft.com/$graphApiVersion/$Resource`?`$filter=managementAgent eq 'mdm' and managementAgent eq 'easmdm'"
+
+            # https://docs.microsoft.com/en-us/graph/api/intune-devices-manageddevice-list?view=graph-rest-1.0
+
+			#$uri = "https://graph.microsoft.com/$graphApiVersion/$Resource`?`$filter=managementAgent eq 'mdm' and managementAgent eq 'easmdm'"
+            $uri = "https://graph.microsoft.com/$graphApiVersion/$Resource`?`$filter=operatingSystem eq 'Windows'"
+
 			Write-Warning "EAS Devices are excluded by default, please use -IncludeEAS if you want to include those devices"
 			Write-Host
-			(Invoke-RestMethod -Uri $uri -Headers $authToken -Method Get).Value
+			#(Invoke-RestMethod -Uri $uri -Headers $authToken -Method Get).Value
 			# (Invoke-RestMethod -Uri $uri -Headers $authToken -Method Get).Value | out-file mobiledevices.txt -append
+   
+            Write-Host "Calling $uri"
+            $DevicesResponse = (Invoke-RestMethod -Uri $uri -Headers $authToken -Method Get)
+            $Devices = $DevicesResponse.value
+            $DevicesNextLink = $DevicesResponse."@odata.nextLink"
+            while ($DevicesNextLink -ne $null){
+                Write-Host "Calling $DevicesNextLink"
+                $DevicesResponse = (Invoke-RestMethod -Uri $DevicesNextLink -Headers $authToken -Method Get)
+                $DevicesNextLink = $DevicesResponse."@odata.nextLink"
+                $Devices += $DevicesResponse.value
+            }
+            return $Devices
+
 			}
 		}
     catch
@@ -506,6 +524,51 @@ $JSON = @"
 
 
 
+# (Lubos) if it expires in less than 15 minutes, renew it...
+Function Check-AuthTokenValidity {
+
+# Checking if authToken exists before running authentication
+If ($global:authToken)
+	{
+    # Setting DateTime to Universal time to work in all timezones
+    $DateTime = (Get-Date).ToUniversalTime()
+
+    # If the authToken exists checking when it expires
+    $TokenExpires = ($authToken.ExpiresOn.datetime - $DateTime).Minutes
+
+    # expiration - value in minutes
+    If ($TokenExpires -le 15)
+		{
+		write-host "Authentication Token expired" $TokenExpires "minutes ago" -ForegroundColor Yellow
+		write-host
+
+		# Defining User Principal Name if not present
+		If ($User -eq $null -or $User -eq "")
+			{
+			$User = Read-Host -Prompt "Please specify your user principal name for Azure Authentication"
+			Write-Host
+			}
+		$global:authToken = Get-AuthToken -User $User
+		}
+	}
+
+# Authentication doesn't exist, calling Get-AuthToken function
+Else
+	{
+	If ($User -eq $null -or $User -eq "")
+		{
+		$User = Read-Host -Prompt "Please specify your user principal name for Azure Authentication"
+		Write-Host
+		}
+	# Getting the authorization token
+	$global:authToken = Get-AuthToken -User $User
+	}
+
+}
+
+
+
+
 ####################################################################################################
 #                                          Script Main                                             #
 ####################################################################################################
@@ -545,44 +608,7 @@ write-host
 #>
 
 
-
-# Checking if authToken exists before running authentication
-If ($global:authToken)
-	{
-    # Setting DateTime to Universal time to work in all timezones
-    $DateTime = (Get-Date).ToUniversalTime()
-
-    # If the authToken exists checking when it expires
-    $TokenExpires = ($authToken.ExpiresOn.datetime - $DateTime).Minutes
-
-	If ($TokenExpires -le 0)
-		{
-		write-host "Authentication Token expired" $TokenExpires "minutes ago" -ForegroundColor Yellow
-		write-host
-
-		# Defining User Principal Name if not present
-		If ($User -eq $null -or $User -eq "")
-			{
-			$User = Read-Host -Prompt "Please specify your user principal name for Azure Authentication"
-			Write-Host
-			}
-		$global:authToken = Get-AuthToken -User $User
-		}
-	}
-
-# Authentication doesn't exist, calling Get-AuthToken function
-Else
-	{
-	If ($User -eq $null -or $User -eq "")
-		{
-		$User = Read-Host -Prompt "Please specify your user principal name for Azure Authentication"
-		Write-Host
-		}
-	# Getting the authorization token
-	$global:authToken = Get-AuthToken -User $User
-	}
-
-
+Check-AuthTokenValidity
 
 
 # Getting list of Intune Scope Tages and their associated IDs
@@ -594,8 +620,99 @@ write-host "Intune Scope Tags and corresponding IDs" -foregroundcolor "yellow"
 $ScopeTags2IDHT
 write-host
 
-$ManagedDevices = Get-ManagedDevices | Select -Last 10 deviceName,roleScopeTagIds
-$ManagedDevices
+
+$outfile = "C:\temp\Outfile.txt"
+$newcsv = {} | Select "id","deviceName","scopeTags" | Export-Csv $outfile -NoTypeInformation
+$csvfile = Import-Csv $outfile
+
+# Enumerate through all InTune mobile devices and assign Scope Tags based on SMTP Domains for devices than have none, i.e. newly enrolled devices
+
+#$ManagedDevices = Get-ManagedDevices -deviceName "...."
+
+$ManagedDevices = Get-AllManagedDevices 
+
+$ManagedDevices.count
+
+#| Out-GridView
+
+# https://stackoverflow.com/questions/17927525/accessing-values-of-object-properties-in-powershell
+#$ManagedDevices.hardwareInformation.psobject.properties["batteryHealthPercentage"].Value
+#$ManagedDevices.hardwareInformation.psobject.properties["batteryHealthPercentage"] | % {$_.Value}
+
+If($ManagedDevices) {
+	$NumberOfManagedDevices = $ManagedDevices.count
+	$NumberOfNewManagedDevices = 0
+    Foreach ($Device in $ManagedDevices)
+		{
+
+        Check-AuthTokenValidity
+
+		$DeviceID = $Device.id
+		$DeviceName = $Device.deviceName
+		$Enroller = $Device.userPrincipalName
+
+		write-host "Managed Device '$DeviceName/$DeviceID' found..." -ForegroundColor Yellow
+
+        $csvfile.id = $DeviceID
+        $csvfile.deviceName = $DeviceName
+
+		$DeviceScopeTags = (Get-ManagedDevices -id $DeviceID).roleScopeTagIds
+		If (($Device.deviceRegistrationState -eq "registered") -and ($DeviceScopeTags.count -eq 0))
+			{
+			$NumberOfNewManagedDevices++
+			#write-host "Device $DeviceName/$DeviceID enrolled by '$Enroller' has no Scope Tag." -foregroundcolor "green"
+
+            $csvfile.scopeTags = "(empty)"
+
+			$UserId = Get-ManagedDeviceUser -DeviceID $DeviceID
+			$User = Get-AADUser $userId
+
+			#Write-Host "`tDevice Registered User:" $User.displayName
+			#Write-Host "`tUser Principle Name   :" $User.userPrincipalName
+			
+			$UserSMTPDomain = $User.userPrincipalName.SubString($User.userPrincipalName.IndexOf("@"))
+			
+            <#
+			If ($SupportedSMTPDomains.contains($UserSMTPDomain))
+				{
+				write-host "`tDevice '$DeviceName' from User '$($User.userPrincipalName)' will be assigned Scope Tag '$($SMTPDomain2DeviceScopeTag[$UserSMTPDomain])' with ScopeTagID '$($ScopeTags2IDHT.Item($SMTPDomain2DeviceScopeTag[$UserSMTPDomain]))'"
+				# Actual Scope Tag assignment below
+				$Result = Update-ManagedDevices -id $DeviceID -ScopeTags @($($ScopeTags2IDHT.Item($SMTPDomain2DeviceScopeTag[$UserSMTPDomain])))
+				If ($Result -eq "") {Write-Host "New Device '$DeviceName' enrolled by $($User.userPrincipalName) patched with ScopeTag '$($SMTPDomain2DeviceScopeTag[$UserSMTPDomain])' corresponding to SMTP Domain $UserSMTPDomain..." -ForegroundColor "Green"}
+				}
+			Else {write-host "`tWarning: No corresponding Scope Tag has been specified in `$SMTPDomain2DeviceScopeTag hashtable for SMTP Domain '$UserSMTPDomain' of device user '$($User.userPrincipalName)'" -foregroundcolor "magenta"}
+            #>			
+            }
+                        
+		Else {
+			$STList = $DeviceScopeTags | % {$CurrentSCID = $_; $ScopeTags2IDHT.Keys | ? {$ScopeTags2IDHT[$_] -eq $CurrentSCID}}
+			
+            If ($STList -is [array]) {
+                #write-host "`tDevice '$DeviceName/$DeviceID' enrolled by '$Enroller' already has Scope Tags '$($STList -join "', '")'."
+
+                $csvfile.scopeTags = $($STList -join ";")
+
+            }
+			Else {
+                #write-host "`tDevice '$DeviceName/$DeviceID' enrolled by '$Enroller' already has Scope Tag '$STList'."
+
+                $csvfile.scopeTags = $STList
+
+            }
+		}
+		#Write-Host
+
+        $csvfile | Export-CSV $outfile –Append
+        
+		}
+	If ($NumberOfNewManagedDevices -eq 0) {Write-Host "`r`nNo newly enrolled Managed Devices found amongst the $NumberOfManagedDevices present mobile devices in tenant...`r`n" -ForegroundColor "cyan"}
+	Else {Write-Host "`r`n$NumberOfNewManagedDevices newly enrolled Managed Devices have been assigned corresponding Scope Tags...`r`n" -ForegroundColor "cyan"}
+	}
+Else {Write-Host "`r`nNo Managed Devices found in tenant...`r`n" -ForegroundColor cyan}
+	
+
+
+
 
 <#
 
