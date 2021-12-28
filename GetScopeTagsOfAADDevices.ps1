@@ -1,53 +1,22 @@
 ﻿
-# get scope tags for AAD devices 
-# based on https://github.com/carygarvin/Assign-DeviceScopeTags.ps1/blob/master/Assign-DeviceScopeTags.ps1 --- THANK YOU!
-
-Install-Module AzureAD
-
-
 # ***************************************************************************************************
 # ***************************************************************************************************
 #
-#  Author       : Cary GARVIN (Script Main body)
-#  Credit       : Microsoft   (Script functions)
-#  Contact      : cary(at)garvin.tech
-#  LinkedIn     : https://www.linkedin.com/in/cary-garvin
-#  GitHub       : https://github.com/carygarvin/
+#  Author       : Ľuboš Nikolíni
+#  Credit       : Microsoft and Cary GARVIN (Script functions), 
+#  Contact      : lubos(at)nikolini.eu
+#  LinkedIn     : https://sk.linkedin.com/in/nikolini
+#  GitHub       : https://github.com/najki78/publicStuff/
 #
 #
-#  Script Name  : Assign-DeviceScopeTags.ps1
+#  Script Name  : GetScopeTagsOfAADDevices.ps1
 #  Version      : 1.0
-#  Release date : 06/01/2019 (CET)
+#  Release date : 2021-12-28
 #
-#  History      : This script was written before Microsoft added the feature to set Device Scope tags based on groups.
-#                 Before that Office 365 Intune feature was introduced, newly enrolled devices would need to have their Scope Tags assigned one by one by the Intune Administrator before Intune policies would trickle down onto the device.
-#                 The present script alleviated this by allowing the Intune Administrator to programmatically set Scope Tags for all newly enrolled devices in one shot by running the present script based on a simple SMTP Domain to Scope Tag mapping table.
-#                 Script Main written by Cary GARVIN using only Functions from 2 scripts supplied by Microsoft
-#                 Functions from the following 2 official Microsoft scripts are used in the present script:
-# 		               Script 'RBAC_ScopeTags_DeviceAssign.ps1'      (https://github.com/microsoftgraph/powershell-intune-samples/tree/master/RBAC)
-# 		               Script 'ManagedDevices_Get.ps1'               (https://github.com/microsoftgraph/powershell-intune-samples/tree/master/ManagedDevices)
-#                 The Microsoft functions used from both scripts are as follows: 
-#		               Function 'Get-AuthToken'                      From script 'RBAC_ScopeTags_DeviceAssign.ps1' or script 'ManagedDevices_Get.ps1'
-#		               Function 'Get-ManagedDevices'                 Version with ID parameter from script 'RBAC_ScopeTags_DeviceAssign.ps1' and not the one from script 'ManagedDevices_Get.ps1' without ID parameter
-#		               Function 'Get-ManagedDeviceUser'              From script 'ManagedDevices_Get.ps1'
-#		               Function 'Get-AADUser'                        From script 'ManagedDevices_Get.ps1'
-#		               Function 'Get-RBACScopeTag'                   From script 'RBAC_ScopeTags_DeviceAssign.ps1'
-#		               Function 'Update-ManagedDevices'              From script 'RBAC_ScopeTags_DeviceAssign.ps1'
 #                 
-#  Purpose      : The present Script is written for organizations having several subsidiaries and wishing to handle mobile devices for each entity in a particular way through the use of specific Intune Scope Tags.
-#                 The  Script sets Intune Scope Tags on all newly enrolled mobile devices (thus without any Scope Tag assigned) based on the Domain portion of the SMTP Address taken from the device's associated user's UPN (User Principal Name) of the user who enrolled the device.
-#                 Such a script is especially useful for Organizations who have several companies or Domains hosted in a single Office 365 tenant.
-#                 If the Script is scheduled at regular intervals it can ensure newly enrolled devices get their Scope Tags assigned immediately and then have the right policies applied to the devices, as opposed as being left in limbo until the Intune Administrator assigns the right Scope Tag.
-#                 The present script alleviated this by allowing the Intune Administrator to set Scope Tags for all newly enrolled devices properly in one shot by running the present script.
+#  Purpose      : Get scope tags for all Intune managed Windows devices 
+#  History      : The script is based on https://github.com/carygarvin/Assign-DeviceScopeTags.ps1/blob/master/Assign-DeviceScopeTags.ps1 ---> THANK YOU!
 #
-#  The present Script relies on input file 'ScopeTagMappings.txt' to be present in the 'My Documents' folder of the current user.
-#  The input file 'ScopeTagMappings.txt' is read and loaded into a Hashtable/Dictionary variable called '$SMTPDomain2DeviceScopeTag' thus containing SMTP Domains to corresponding Intune Scope Tags mapping pairs.
-#  Mappings are defined in this file in the format '@CompanyDomain.tld=CompanyScopeTag' such as the following example:
-#                      @contoso.com=contoso
-#  See sample file 'ScopeTagMappings.txt' for the correct input format for several Domains to Scope Tag pairs.
-#
-
-
 
 
 ####################################################################################################
@@ -246,7 +215,7 @@ Function Get-AllManagedDevices()
 			#$uri = "https://graph.microsoft.com/$graphApiVersion/$Resource`?`$filter=managementAgent eq 'mdm' and managementAgent eq 'easmdm'"
             $uri = "https://graph.microsoft.com/$graphApiVersion/$Resource`?`$filter=operatingSystem eq 'Windows'"
 
-			Write-Warning "EAS Devices are excluded by default, please use -IncludeEAS if you want to include those devices"
+			#Write-Warning "EAS Devices are excluded by default, please use -IncludeEAS if you want to include those devices"
 			Write-Host
 			#(Invoke-RestMethod -Uri $uri -Headers $authToken -Method Get).Value
 			# (Invoke-RestMethod -Uri $uri -Headers $authToken -Method Get).Value | out-file mobiledevices.txt -append
@@ -568,48 +537,13 @@ Else
 
 
 
-
 ####################################################################################################
 #                                          Script Main                                             #
 ####################################################################################################
 
-<#
-If (test-path "$($script:MyDocsFolder)\ScopeTagMappings.txt")
-	{
-	Try {$SMTPDomain2DeviceScopeTag = get-content "$($script:MyDocsFolder)\ScopeTagMappings.txt" | ConvertFrom-StringData}
-	Catch
-		{
-		write-host "The format of input file '$($script:MyDocsFolder)\ScopeTagMappings.txt' is invalid" -foregroundcolor "red"
-		write-host "Mappings should respect the pattern '@CompanyDomain.tld=CompanyScopeTag'" -foregroundcolor "white"
-		write-host "For example '@contoso.com=contoso'" -foregroundcolor "white"
-		write-host "Please correct entries in mappings file 'ScopeTagMappings.txt' and relaunch the script" -foregroundcolor "white"
-		Break
-		}
-	
-	$InvalidDomain = $SMTPDomain2DeviceScopeTag.Keys | ? { $_.SubString(0,1) -ne "@"}
-	If ($InvalidDomain)
-		{
-		write-host "Invalid Domain format!" -foregroundcolor "red"
-		$InvalidDomain
-		write-host "All Domains in file 'ScopeTagMappings.txt' should start with '@'" -foregroundcolor "red"
-		write-host "Please correct and relaunch the script" -foregroundcolor "white"
-		Break
-		}
-	}
-Else
-	{
-	write-host "File 'ScopeTagMappings.txt' not found! Aborting script." -foregroundcolor "red"
-	Break
-	}
-	
-write-host "Mappings dump of SMTP Domains to Intune Scope Tags from file 'ScopeTagMappings.txt':" -foregroundcolor "yellow"
-$SMTPDomain2DeviceScopeTag
-write-host
-#>
-
+Install-Module AzureAD
 
 Check-AuthTokenValidity
-
 
 # Getting list of Intune Scope Tages and their associated IDs
 Write-Host
@@ -625,15 +559,12 @@ $outfile = "C:\temp\Outfile.txt"
 $newcsv = {} | Select "id","deviceName","scopeTags" | Export-Csv $outfile -NoTypeInformation
 $csvfile = Import-Csv $outfile
 
-# Enumerate through all InTune mobile devices and assign Scope Tags based on SMTP Domains for devices than have none, i.e. newly enrolled devices
 
+# Enumerate a single device based on a deviceName
 #$ManagedDevices = Get-ManagedDevices -deviceName "...."
 
+# Enumerate through all InTune Windows devices 
 $ManagedDevices = Get-AllManagedDevices 
-
-$ManagedDevices.count
-
-#| Out-GridView
 
 # https://stackoverflow.com/questions/17927525/accessing-values-of-object-properties-in-powershell
 #$ManagedDevices.hardwareInformation.psobject.properties["batteryHealthPercentage"].Value
@@ -670,18 +601,8 @@ If($ManagedDevices) {
 			#Write-Host "`tDevice Registered User:" $User.displayName
 			#Write-Host "`tUser Principle Name   :" $User.userPrincipalName
 			
-			$UserSMTPDomain = $User.userPrincipalName.SubString($User.userPrincipalName.IndexOf("@"))
-			
-            <#
-			If ($SupportedSMTPDomains.contains($UserSMTPDomain))
-				{
-				write-host "`tDevice '$DeviceName' from User '$($User.userPrincipalName)' will be assigned Scope Tag '$($SMTPDomain2DeviceScopeTag[$UserSMTPDomain])' with ScopeTagID '$($ScopeTags2IDHT.Item($SMTPDomain2DeviceScopeTag[$UserSMTPDomain]))'"
-				# Actual Scope Tag assignment below
-				$Result = Update-ManagedDevices -id $DeviceID -ScopeTags @($($ScopeTags2IDHT.Item($SMTPDomain2DeviceScopeTag[$UserSMTPDomain])))
-				If ($Result -eq "") {Write-Host "New Device '$DeviceName' enrolled by $($User.userPrincipalName) patched with ScopeTag '$($SMTPDomain2DeviceScopeTag[$UserSMTPDomain])' corresponding to SMTP Domain $UserSMTPDomain..." -ForegroundColor "Green"}
-				}
-			Else {write-host "`tWarning: No corresponding Scope Tag has been specified in `$SMTPDomain2DeviceScopeTag hashtable for SMTP Domain '$UserSMTPDomain' of device user '$($User.userPrincipalName)'" -foregroundcolor "magenta"}
-            #>			
+			#$UserSMTPDomain = $User.userPrincipalName.SubString($User.userPrincipalName.IndexOf("@"))
+		
             }
                         
 		Else {
@@ -690,7 +611,7 @@ If($ManagedDevices) {
             If ($STList -is [array]) {
                 #write-host "`tDevice '$DeviceName/$DeviceID' enrolled by '$Enroller' already has Scope Tags '$($STList -join "', '")'."
 
-                $csvfile.scopeTags = $($STList -join ";")
+                $csvfile.scopeTags = $($STList -join ",")
 
             }
 			Else {
@@ -705,92 +626,7 @@ If($ManagedDevices) {
         $csvfile | Export-CSV $outfile –Append
         
 		}
-	If ($NumberOfNewManagedDevices -eq 0) {Write-Host "`r`nNo newly enrolled Managed Devices found amongst the $NumberOfManagedDevices present mobile devices in tenant...`r`n" -ForegroundColor "cyan"}
-	Else {Write-Host "`r`n$NumberOfNewManagedDevices newly enrolled Managed Devices have been assigned corresponding Scope Tags...`r`n" -ForegroundColor "cyan"}
+#	If ($NumberOfNewManagedDevices -eq 0) {Write-Host "`r`nNo newly enrolled Managed Devices found amongst the $NumberOfManagedDevices present mobile devices in tenant...`r`n" -ForegroundColor "cyan"}
+#	Else {Write-Host "`r`n$NumberOfNewManagedDevices newly enrolled Managed Devices have been assigned corresponding Scope Tags...`r`n" -ForegroundColor "cyan"}
 	}
 Else {Write-Host "`r`nNo Managed Devices found in tenant...`r`n" -ForegroundColor cyan}
-	
-
-
-
-
-<#
-
-# Validating $SMTPDomain2DeviceScopeTag hashtable at top of script against reality of Scope Tags defined on the Office365 tenant
-# Script aborts if a non existant Scope Tage is present in the hashtable
-write-host "Validating SMTP Domain to Scope Tag table..." -foregroundcolor "yellow"
-$SupportedSMTPDomains = @()
-$ScopeTagsWithAssignments = @()
-$SMTPDomain2DeviceScopeTag.GetEnumerator() | ForEach-Object {
-	$message = 'SMTP Domain ''{0}'' will be assigned Scope Tag ''{1}''.' -f $_.key, $_.value
-	Write-Output $message
-	$SupportedSMTPDomains += $_.key
-	$ScopeTagsWithAssignments += $_.value
-	If ($ScopeTags.contains($_.value)) {write-host "'$($_.value)' is amongst the existing Intune Scope Tags" -foregroundcolor "green"}
-	Else
-		{
-		write-host "Error: '$($_.value)' is NOT amongst the existing Intune Scope Tags!" -foregroundcolor "red"
-		$ScopeTagFromHT = $_.value
-		If ($ScopeTags -match $_.value) {write-host "Has Scope Tag '$($_.value)' into '$($ScopeTags | ?{$_ -match $ScopeTagFromHT})' been renamed?" -foregroundcolor "red"}
-		write-host "Please correct invalid Scope Tag '$($_.value)' for SMTP Domain '$($_.key)'!" -foregroundcolor "red"
-		write-host "The script will now abort." -foregroundcolor "white"
-		Break
-		}
-	}
-write-host
-$ScopeTags | ForEach-Object {If (!($ScopeTagsWithAssignments.contains($_))) {write-host "Warning: Scope Tag '$_' from tenant does not have a corresponding SMTP Domain for device assignment!" -foregroundcolor "magenta"}}
-write-host
-
-
-
-# Enumerate through all InTune mobile devices and assign Scope Tags based on SMTP Domains for devices than have none, i.e. newly enrolled devices
-$ManagedDevices = Get-ManagedDevices
-If($ManagedDevices)
-	{
-	$NumberOfManagedDevices = $ManagedDevices.count
-	$NumberOfNewManagedDevices = 0
-    Foreach ($Device in $ManagedDevices)
-		{
-		$DeviceID = $Device.id
-		$DeviceName = $Device.deviceName
-		$Enroller = $Device.userPrincipalName
-
-		write-host "Managed Device '$DeviceName' found..." -ForegroundColor Yellow
-
-		$DeviceScopeTags = (Get-ManagedDevices -id $DeviceID).roleScopeTagIds
-		If (($Device.deviceRegistrationState -eq "registered") -and ($DeviceScopeTags.count -eq 0))
-			{
-			$NumberOfNewManagedDevices++
-			write-host "Device $DeviceName/$DeviceID enrolled by '$Enroller' has no Scope Tag. Assigning new Scope Tag!" -foregroundcolor "green"
-
-			$UserId = Get-ManagedDeviceUser -DeviceID $DeviceID
-			$User = Get-AADUser $userId
-
-			Write-Host "`tDevice Registered User:" $User.displayName
-			Write-Host "`tUser Principle Name   :" $User.userPrincipalName
-			
-			$UserSMTPDomain = $User.userPrincipalName.SubString($User.userPrincipalName.IndexOf("@"))
-			
-			If ($SupportedSMTPDomains.contains($UserSMTPDomain))
-				{
-				write-host "`tDevice '$DeviceName' from User '$($User.userPrincipalName)' will be assigned Scope Tag '$($SMTPDomain2DeviceScopeTag[$UserSMTPDomain])' with ScopeTagID '$($ScopeTags2IDHT.Item($SMTPDomain2DeviceScopeTag[$UserSMTPDomain]))'"
-				# Actual Scope Tag assignment below
-				$Result = Update-ManagedDevices -id $DeviceID -ScopeTags @($($ScopeTags2IDHT.Item($SMTPDomain2DeviceScopeTag[$UserSMTPDomain])))
-				If ($Result -eq "") {Write-Host "New Device '$DeviceName' enrolled by $($User.userPrincipalName) patched with ScopeTag '$($SMTPDomain2DeviceScopeTag[$UserSMTPDomain])' corresponding to SMTP Domain $UserSMTPDomain..." -ForegroundColor "Green"}
-				}
-			Else {write-host "`tWarning: No corresponding Scope Tag has been specified in `$SMTPDomain2DeviceScopeTag hashtable for SMTP Domain '$UserSMTPDomain' of device user '$($User.userPrincipalName)'" -foregroundcolor "magenta"}
-			}
-		Else 
-			{
-			$STList = $DeviceScopeTags | % {$CurrentSCID = $_; $ScopeTags2IDHT.Keys | ? {$ScopeTags2IDHT[$_] -eq $CurrentSCID}}
-			If ($STList -is [array]) {write-host "`tDevice enrolled by '$Enroller' already has Scope Tags '$($STList -join "', '")'."}
-			Else {write-host "`tDevice enrolled by '$Enroller' already has Scope Tag '$STList'."}
-			}
-		Write-Host
-		}
-	If ($NumberOfNewManagedDevices -eq 0) {Write-Host "`r`nNo newly enrolled Managed Devices found amongst the $NumberOfManagedDevices present mobile devices in tenant...`r`n" -ForegroundColor "cyan"}
-	Else {Write-Host "`r`n$NumberOfNewManagedDevices newly enrolled Managed Devices have been assigned corresponding Scope Tags...`r`n" -ForegroundColor "cyan"}
-	}
-Else {Write-Host "`r`nNo Managed Devices found in tenant...`r`n" -ForegroundColor cyan}
-	
-#>
