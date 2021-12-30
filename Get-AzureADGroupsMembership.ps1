@@ -111,3 +111,26 @@ mkdir $folder -ErrorAction SilentlyContinue
 # the function below can take up to several hours to run
 # the function lists all AAD groups and saves the group membership into the files (filename: group Id)
 # Save-AllAzureADGroupsMembership
+
+
+$hashDeviceIds = @{}
+# ObjectType = Device
+# DeviceId
+# DisplayName
+
+Import-Csv $folder"0754e177-b20d-4919-b03b-aa814c3f8437.txt" | ForEach-Object {
+    #Write-Host "$($_.ObjectType) ...  $($_.DeviceId) ... $($_.DisplayName)"
+ 
+    # if such DeviceId is not yet listed, create an entry (empty array to store ObjectIds of groups)
+    if(-not $hashDeviceIds["$($_.DeviceId)"]) { $hashDeviceIds["$($_.DeviceId)"] = @() } 
+    
+    ($hashDeviceIds["$($_.DeviceId)"].count) -1
+
+    #$hashDeviceIds["$($_.DeviceId)"][($hashDeviceIds["$($_.DeviceId)"].count) -1] = $($_.DisplayName)
+    $hashDeviceIds["$($_.DeviceId)"] = ,$($_.DisplayName)
+    
+    ($hashDeviceIds["$($_.DeviceId)"].count) -1
+
+}
+
+$hashDeviceIds
