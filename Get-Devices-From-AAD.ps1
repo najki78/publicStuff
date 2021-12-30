@@ -307,7 +307,8 @@ Write-host "Devices have been saved to a variable. Enter '`$AzureADDevices' to v
     #$MDMDevices = Get-IntuneManagedDevice | Get-MSGraphAllPages
     #$MDMDevices.Value
 
-$MDMDevices = Get-AllIntuneDevices | Select -First 1521
+$MDMDevices = Get-AllIntuneDevices 
+# | Select -First 100
 Write-Host "Found $($MDMDevices.Count) devices in Intune" -ForegroundColor Yellow
 #$MDMDevices 
 
