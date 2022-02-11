@@ -14,8 +14,8 @@ if (-not $m)
 
 }
 
-Install-Module AzureAD
-Connect-AzureAD
+#Install-Module AzureAD
+#Connect-AzureAD
 
 
 
@@ -45,6 +45,7 @@ The SID to convert
     return $guid
 }
 
+<# 
 
 $sid = "S-1-12-1-3355307493-1154222592-1435707025-2509201134"
 $objectId = Convert-AzureAdSidToObjectId -Sid $sid
@@ -56,7 +57,7 @@ Write-Output $objectId
 # ----
 # 73d664e4-0886-4a73-b745-c694da45ddb4
 
-
+#>
 
 function Convert-AzureAdObjectIdToSid {
 <#
@@ -83,16 +84,15 @@ The Object ID to convert
     return $sid
 }
 
-
 <#
-$objectId = "e0e10620-7159-4a17-b984-c89f34c86bf6"
+$objectId = "a18b5f0b-375d-48ac-ab7f-9a952042df35"
 $sid = Convert-AzureAdObjectIdToSid -ObjectId $objectId
 Write-Output $sid
+#>
+
 
 # Output:
 
 # S-1-12-1-1943430372-1249052806-2496021943-3034400218
-#>
-
-
 # Get-AzureADObjectByObjectId -ObjectIds $objectId
+
