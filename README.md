@@ -10,3 +10,6 @@ A script to retrieve scope tags for all Intune managed Windows devices (as there
 ## [Get-AzureADDevicesGroupsMembership.ps1](Get-AzureADDevicesGroupsMembership.ps1)
 A script to retrieve AAD groups membership of AzureAD devices (aka Get-AzureADDeviceMembership).
 Well, until we have have an equivalent of Get-AzureADUserMembership that would cover Device objects.
+
+## [ListObjectIdsForAADDevices.ps1](ListObjectIdsForAADDevices.ps1)
+A script to dump (Azure AD) Object ID of given host names (detects incorrect or duplicate names).
