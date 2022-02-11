@@ -94,4 +94,3 @@ Write-Output $sid
 
 # S-1-12-1-1943430372-1249052806-2496021943-3034400218
 # Get-AzureADObjectByObjectId -ObjectIds $objectId
-
