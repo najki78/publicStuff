@@ -2,6 +2,8 @@
 
 if(!(Connect-MSGraph)){ Connect-MSGraph }
 
+### $DevicesToSync = Get-IntuneManagedDevice -Filter "contains(deviceName,'XYZ123456')"  #| select serialnumber, devicename, userDisplayName, userPrincipalName, id, userId, azureADDeviceId, managedDeviceOwnerType, model, manufacturer
+
 try {
 
     # Which AAD group do we want to check against
