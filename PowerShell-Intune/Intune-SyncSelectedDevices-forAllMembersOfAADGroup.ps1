@@ -2,7 +2,13 @@
 
 if(!(Connect-MSGraph)){ Connect-MSGraph }
 
-### $DevicesToSync = Get-IntuneManagedDevice -Filter "contains(deviceName,'XYZ123456')"  #| select serialnumber, devicename, userDisplayName, userPrincipalName, id, userId, azureADDeviceId, managedDeviceOwnerType, model, manufacturer
+<#
+$DevicesToSync = Get-IntuneManagedDevice -Filter "contains(deviceName,'XYZ123456')" #| select serialnumber, devicename, userDisplayName, userPrincipalName, id, userId, azureADDeviceId, managedDeviceOwnerType, model, manufacturer
+Foreach ($Device in $DevicesToSync) { 
+    Invoke-IntuneManagedDeviceSyncDevice -managedDeviceId $Device.managedDeviceId
+    Write-Host "Sending Sync request to Device with Name $($Device.deviceName)" -ForegroundColor Green
+}
+#>
 
 try {
 
