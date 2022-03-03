@@ -302,7 +302,6 @@ Foreach ($DeviceType in $DeviceTypes)
 Write-host "Devices have been saved to a variable. Enter '`$AzureADDevices' to view."
 #>
 
-
     #Connect-MSGraph
     #$MDMDevices = Get-IntuneManagedDevice | Get-MSGraphAllPages
     #$MDMDevices.Value
