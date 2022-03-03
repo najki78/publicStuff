@@ -44,7 +44,7 @@ if(!(Connect-MSGraph)){
 }
  
 # Which AAD group do we want to check against
-$groupName = "Intune-Devices-EMEA-All"
+$groupName = "Intune-ProactiveRemediation-ReportNetworkConnections"
  
 # All AAD groups ... $Groups = Get-AADGroup | Get-MSGraphAllPages
 # All Intune groups in AAD ... e.g. $Groups = Get-AADGroup | Get-MSGraphAllPages | Where {($_.displayName -like “NL-*” -or $_.displayName -like “*Intune*”)}
