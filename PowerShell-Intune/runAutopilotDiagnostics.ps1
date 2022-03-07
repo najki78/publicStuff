@@ -52,5 +52,5 @@ PARAMETERS
 Set-ExecutionPolicy bypass -force
 Install-Script -Name Get-AutopilotDiagnostics -Scope "AllUsers" -force
 
-Get-AutopilotDiagnostics -CABFile "XXXXXX-Autopilot.cab" -Online -AllSessions 
+Get-AutopilotDiagnostics -CABFile "Autopilot.cab" -Online -AllSessions 
 # try switch: -ShowPolicies 
