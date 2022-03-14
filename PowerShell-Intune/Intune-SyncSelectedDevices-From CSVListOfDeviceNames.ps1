@@ -233,7 +233,7 @@ try {
 
             <#
             DeletionTimestamp             : 
-            ObjectId                      : 8df52602-6093-4400-bd78-696e7d39bb30
+            ObjectId                      : xxxxxxxxxxxxxxxx
             ObjectType                    : Device
             AccountEnabled                : True
             AlternativeSecurityIds        : {class AlternativeSecurityId {
@@ -244,15 +244,15 @@ try {
                                             }
             ApproximateLastLogonTimeStamp : 9. 3. 2022 9:56:12
             ComplianceExpiryTime          : 
-            DeviceId                      : e03c1411-a22e-4d3d-88dc-4ea5f92837a3
+            DeviceId                      : xxxxxxxxxxxxxxxx
             DeviceMetadata                : 
             DeviceObjectVersion           : 2
             DeviceOSType                  : Windows
             DeviceOSVersion               : 10.0.19044.1526
-            DevicePhysicalIds             : {[GID]:g:6755437138343530, [PurchaseOrderId]:322322998, [ZTDID]:25125972-7f07-44e4-920a-84d0bd11f55e, [HWID]:h:6966526733599130}
+            DevicePhysicalIds             : {[GID]:g:xxxxxxxx, [PurchaseOrderId]:xxxxxxxxxxx, [ZTDID]:xxxxxxxxxxxxxxxx, [HWID]:h:xxxxxxxxxxxxxxxx}
             DeviceTrustType               : AzureAd
             DirSyncEnabled                : 
-            DisplayName                   : MC081267
+            DisplayName                   : ABCDEF267
             IsCompliant                   : True
             IsManaged                     : True
             LastDirSyncTime               : 
