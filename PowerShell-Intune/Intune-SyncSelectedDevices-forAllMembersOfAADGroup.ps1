@@ -219,8 +219,9 @@ Foreach ($Device in $DevicesToSync) {
 try {
 
     # Which AAD group do we want to check against
-    $groupName = "Intune-ProactiveRemediation-ReportNetworkConnections"
+      $groupName = "Intune-ProactiveRemediation-ReportNetworkConnections"
  
+
         
     #$Groups = Get-AADGroup | Get-MSGraphAllPages
     $Group = Get-AADGroup -Filter "displayname eq '$GroupName'"
