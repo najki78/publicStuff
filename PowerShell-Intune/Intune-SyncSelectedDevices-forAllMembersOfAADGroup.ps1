@@ -219,7 +219,7 @@ Foreach ($Device in $DevicesToSync) {
 try {
 
     # Which AAD group do we want to check against
-      $groupName = "Intune-ProactiveRemediation-ReportNetworkConnections"
+      $groupName = "Intune-Scripts-EnableSharedComputerLicensing"
  
 
         
