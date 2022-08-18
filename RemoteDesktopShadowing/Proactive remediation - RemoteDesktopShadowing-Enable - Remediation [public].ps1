@@ -1,21 +1,10 @@
-﻿
-### 2022-04-06 Lubos - remediation script - Enable Remote desktop shadowing
+﻿### 2022-04-06 Lubos - remediation script - Enable Remote desktop shadowing
 
 <# 
 
- Description: Enable Remote desktop shadowing
+ Description: Enable Remote desktop shadowing and disable Lock screen
  Author: Lubos Nikolini
- Version: 2021-12-11A
-          2022-01-21A [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI\SessionData] ... "AllowLockScreen"=dword:00000000
-          2022-01-24A thanks to https://www.winhelponline.com/blog/disable-lock-screen-anniversary-update-windows-10/#google_vignette
-          2022-01-26A Enable-PsRemoting -Force –SkipNetworkProfileCheck ... https://shellgeek.com/powershell-enable-psremoting/
-          2022-01-26B disabled Enable-PsRemoting -Force –SkipNetworkProfileCheck ... it is covered by Enable-RemoteManagement.ps1
-          2022-02-02  HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server ... fDenyTSConnections - 0
 
- Equivalent Group Policy: "Set rules for remote control of Remote Desktop Services user sessions"
- Reference: 
-    https://swarm.ptsecurity.com/remote-desktop-services-shadowing/
-    https://www.how2shout.com/how-to/windows-firewall-allow-rdp-using-gui-powershell-command.html
 #> 
 
 
@@ -39,23 +28,11 @@ $value = 1
 $valueType = "DWORD"
 Set-Registry $registryPath $RegName $value $valueType
 
-<#
-$registryPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server"
-$RegName = "fDenyTSConnections"
-$value = 0
-$valueType = "DWORD"
-Set-Registry $registryPath $RegName $value
-
-# or "fDenyTSConnections" in Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services ???
-
-#>
-
 $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services"
 $RegName = "Shadow"
 $value = 2
 $valueType = "DWORD"
 Set-Registry $registryPath $RegName $value $valueType
-
 
 $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI\SessionData"
 $RegName = "AllowLockScreen"
@@ -63,28 +40,15 @@ $value = 0
 $valueType = "DWORD"
 Set-Registry $registryPath $RegName $value $valueType
 
-
-<#
-
-# Enable firewall - to be tested (if enabling Public profile is not needed - "File and Printer Sharing (SMB-In)" rule is both "Private, Public")
-
-$DisplayNamesList=("File and Printer Sharing (SMB-In)", "Remote Desktop - Shadow (TCP-In)")
-foreach ($Rule in $DisplayNamesList){Get-NetFirewallRule -DisplayName $Rule | ?{$_.Profile -notmatch "Public"} | Enable-NetFirewallRule }
-
-#>
-
-
-
-
 # creates scheduled task that runs on logon and return from lock screen and disables lock screen in registry
 # https://www.winhelponline.com/blog/disable-lock-screen-anniversary-update-windows-10/#google_vignette
 
 $taskName = "Disable Lock Screen"
 
 if (${env:PUBLIC}) {
-    $folderName = "${env:PUBLIC}\Documents\Clarios\"
+    $folderName = "${env:PUBLIC}\Documents\RemoteDesktopShadowing\"
 } else {
-    $folderName = "C:\Users\Public\Documents\Clarios\"
+    $folderName = "C:\Users\Public\Documents\RemoteDesktopShadowing\"
 }
 
 if (!(Test-Path $folderName)) {
@@ -94,14 +58,6 @@ if (!(Test-Path $folderName)) {
 $fileName = "{0}{1}" -f $folderName,"DisableLockScreen-UTF16LE.xml" 
 
 <#
-# `Enable All Tasks History` in PowerShell
-$logName = 'Microsoft-Windows-TaskScheduler/Operational'
-$log = New-Object System.Diagnostics.Eventing.Reader.EventLogConfiguration $logName
-$log.IsEnabled=$true
-$log.SaveChanges()
-#>
-
-<#
 
     # https://www.educba.com/powershell-base64/
 
@@ -109,7 +65,7 @@ $log.SaveChanges()
     # unicode: Encodes in UTF-16 format using the little-endian byte order.
     # reference> https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-content?view=powershell-7.2#:~:text=Encoding%20is%20a%20dynamic%20parameter%20that%20the%20FileSystem,the%20entire%20file%20in%20a%20single%20read%20operation.
 
-    $inputfile = "C:\Users\pnikolub\OneDrive - Clarios\Documents\2022-01-24 RemoteDesktopShadowing\DisableLockScreen-UTF16LE.xml"
+    $inputfile = "DisableLockScreen-UTF16LE.xml"
     # -raw parameter is of utmost importance, otherwise we lose newline characters
     $fc = get-content $inputfile -raw -Encoding unicode
 
@@ -145,7 +101,5 @@ Remove-Item -Path $fileName -Force -ErrorAction SilentlyContinue
 
 # run the scheduled task
 Start-ScheduledTask -TaskName $taskName
-
-#Enable-PsRemoting -Force –SkipNetworkProfileCheck
 
 return 0
