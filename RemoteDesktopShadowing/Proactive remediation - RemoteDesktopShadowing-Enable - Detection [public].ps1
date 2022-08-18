@@ -1,5 +1,16 @@
 ﻿
-### 2022-04-06 Lubos - detection script - Enable Remote desktop shadowing
+<# 
+
+ Description: Enable Remote desktop shadowing and disable Lock screen (proactive remediation - detection script)
+ Author: Lubos Nikolini
+ Version: 2022-04-06 
+
+ Settings:
+    Run this script using the logged-on credentials: No
+    Enforce script signature check: No
+    Run script in 64-bit PowerShell: Yes
+
+#> 
 
 function Check-Registry {
     param ($registryPath, $RegName, $value)
