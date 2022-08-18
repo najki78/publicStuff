@@ -1,9 +1,14 @@
-﻿### 2022-04-06 Lubos - remediation script - Enable Remote desktop shadowing
-
+﻿
 <# 
 
- Description: Enable Remote desktop shadowing and disable Lock screen
+ Description: Enable Remote desktop shadowing and disable Lock screen (proactive remediation - remediation script)
  Author: Lubos Nikolini
+ Version: 2022-04-06 
+
+ Settings:
+    Run this script using the logged-on credentials: No
+    Enforce script signature check: No
+    Run script in 64-bit PowerShell: Yes
 
 #> 
 
