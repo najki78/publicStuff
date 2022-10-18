@@ -21,7 +21,7 @@ Install-Module ps2exe
 Invoke-ps2exe "ShadowingSystrayIndicator.ps1"
 #>
 
-$version = "2022-10-13A"
+$version = "2022-10-18A"
 
 # https://stackoverflow.com/questions/59349635/change-tray-icon-based-on-event?rq=1
 
@@ -83,7 +83,7 @@ function Test-RdpSa {
 function OnMenuItem1ClickEventFn () {
     # Build Form object
     $Form = New-Object System.Windows.Forms.Form
-        $Form.Text = "Remote Desktop Shadowing Indicator"
+        $Form.Text = "Remote Desktop Shadowing Indicator (refreshed every 10 seconds)"
         $Form.Size = New-Object System.Drawing.Size(200,200)
         $Form.StartPosition = "CenterScreen"
         $Form.Topmost = $True
@@ -143,7 +143,6 @@ $Current_Folder = split-path $MyInvocation.MyCommand.Path
     $nofImages = [Shell32_Extract]::ExtractIconEx($dllPath, -1, [ref] $phiconLarge, [ref] $phiconSmall, 0)
     $nofIconsExtracted = [Shell32_Extract]::ExtractIconEx($dllPath, 208, [ref] $phiconLarge, [ref] $phiconSmall, 1)  # second parameter is (icon index - 1)
     $offlineIcon = [System.Drawing.Icon]::FromHandle($phiconSmall);
-
 
 $Main_Tool_Icon = New-Object System.Windows.Forms.NotifyIcon
 $Main_Tool_Icon.Text = "Remote Desktop Shadowing Indicator"
