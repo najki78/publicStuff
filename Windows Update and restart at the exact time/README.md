@@ -51,9 +51,9 @@ To add a new timeslot, you need to create a new $hashTable["DayX...."] record wi
 
 - Line 3: [string] Not used anymore, leave it as an empty string
 
-- Line 4: [string] The schedule of the "WindowsUpdateNoRestart" task using SCHTASKS (set it to run e.g. 6 hours before the restart to give enough time for the updates to download and install)
+- Line 4: [string] The schedule of the **WindowsUpdateNoRestart** task using SCHTASKS (set it to run e.g. 6 hours before the restart to give enough time for the updates to download and install)
 
-- Line 5: [string] The schedule of the "RestartAfterWindowsUpdate" task using SCHTASKS
+- Line 5: [string] The schedule of the **RestartAfterWindowsUpdate** task using SCHTASKS
 
 - Line 6: [int] The restart delay in seconds (I use 90 seconds by default; to give enough time for the user to save their work). The shutdown command during those 90 seconds can be cancelled by the user (no admin rights required) during the waiting period. Just type shutdown /a in the command prompt.
 
