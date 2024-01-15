@@ -6,7 +6,7 @@ Windows Update lets you choose a time window for installing updates and restarti
 
 For instance, Feature Update installation would take significantly longer than the regular update and when the installation and restart are scheduled to run at 6PM, one month it might restart at 6:25 and the other at 6:05. Not really predictable.
 
-But what if you want to make sure that the updates are installed earlier and the PC is restart at certain exact time (for example, when the shifts change)? 
+But what if you want to make sure that the updates get installed earlier and the PC is restarted at certain exact time (for example, during the short break when the work shifts change)? 
 
 ## How can we restart at the exact time?
 
