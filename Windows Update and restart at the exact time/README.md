@@ -70,7 +70,7 @@ One limitation of the current version is that you have to create the Intune Scri
 Note: If you want to avoid unexpected restarts, you need to check if the local time and time zone settings are correct. The schedules for updates and restarts use the local time on your PC.
 
 
-### To verify that the updates and restarts are working properly
+### To verify that the updates and restarts are set up properly
 
 - Open Task Scheduler as Administrator (taskschd.msc).
 - Go to your Task Scheduler folder and check the trigger of the **RestartAfterWindowsUpdate** task. It should match your desired restart time.
