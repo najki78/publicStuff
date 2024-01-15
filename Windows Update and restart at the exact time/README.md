@@ -71,8 +71,8 @@ If you want to avoid unexpected restarts, you need to check if the local time an
 ### To verify that the updates and restarts are working properly, follow these steps:
 
 - Open Task Scheduler as Administrator (taskschd.msc).
-- Go to your Task Scheduler folder and check the trigger of the "RestartAfterWindowsUpdate" task. It should match your desired restart time.
-- Check the other task, "ClariosWindowsUpdateNoRestart". It should be set for 6 hours before the restart time.
+- Go to your Task Scheduler folder and check the trigger of the **RestartAfterWindowsUpdate** task. It should match your desired restart time.
+- Check the other task, **WindowsUpdateNoRestart**. It should be set for 6 hours before the restart time.
 
 
 ### To remove the Windows Update configuration from the PC, do this:
