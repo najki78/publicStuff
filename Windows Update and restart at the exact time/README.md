@@ -1,12 +1,18 @@
 # Windows Update and restart at the exact time
 
-Windows Update allows you to choose the time when to install the updates (and restart the computer, if needed, afterwards).
-But what if you want to make sure that the updates are installed earlier and the PC is restart at that exact time (for example, when the shifts change)? 
+If you work with Windows PCs, you know how important it is to keep them updated and secure. But sometimes, you need more control over when the updates are installed and when the PC is restarted. 
+
+Windows Update lets you choose a time window for installing updates and restarting the PC, but it doesn't guarantee that the actual restart will happen exactly when you want it. 
+
+But what if you want to make sure that the updates are installed earlier and the PC is restart at certain exact time (for example, when the shifts change)? 
+
 How can you do that?
 
 Unfortunately, we cannot rely on the default Windows Update scheduler for such scenario (I checked with Microsoft Support).
 
-To solve this problem, I created a PowerShell based solution that uses PSWindowsUpdate by [Michał Gajda](https://github.com/mgajda83/PSWindowsUpdate) (thanks a lot!) to check for and apply any available updates a few hours before the desired restart time. I wanted to minimize the time between the updates installation and the planned restart and therefore decided for running the download and the installation 6 hours prior to the restart, this is easily customizable.
+That's why I decided to create a PowerShell solution that allows me to schedule the updates and the restarts with more precision and reliability.
+
+My solution uses PSWindowsUpdate by [Michał Gajda](https://github.com/mgajda83/PSWindowsUpdate) (thank you very much!) to check for and apply any available updates a few hours before the desired restart time. I wanted to minimize the time between the updates installation and the planned restart and therefore decided for running the download and the installation 6 hours prior to the restart, this is easily customizable.
 
 The solution consists of two scheduled tasks: one that runs the update script (**WindowsUpdateNoRestart**) and one that restarts the PC at the exact time needed (**RestartAfterWindowsUpdate**).
 
