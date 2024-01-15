@@ -83,5 +83,5 @@ Note: If you want to avoid unexpected restarts, you need to check if the local t
 - Delete both tasks, **RestartAfterWindowsUpdate** and **WindowsUpdateNoRestart**, in your Task Scheduler folder.
 - Delete all files with _WindowsUpdateAndRestart_ in the name from **C:\ProgramData\YourFolderName\Intune\** folder (WindowsUpdateAndRestart.txt, *-WindowsUpdateAndRestart.txt and WindowsUpdateAndRestart.ps1).
 
-I hope this helps. I also have a cleanup script and an Intune Remediation tool that can help you with this process. If you would find them useful, let me know.
+I hope this helps. I also have a cleanup script to remove the configuration and an Intune Remediation to monitor it. If you would find them useful, let me know, I will share. 
 And if you have an idea how to make this even easier, write me as well please.
