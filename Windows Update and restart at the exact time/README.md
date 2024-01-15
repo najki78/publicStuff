@@ -45,7 +45,7 @@ This code creates scripts for different schedules and uploads them to Intune usi
 
 To add a new timeslot, you need to create a new $hashTable["DayX...."] record with this structure:
 
-- Line 1: [string] The name of the script in Intune (it will be replaced by the new version)
+- Line 1: [string] The name of the Intune Script (it will be replaced by the new version)
 
 - Line 2: [string] Not used anymore, leave it as an empty string (used by previous version of the script for Register-ScheduledTask parameters)
 
