@@ -4,9 +4,11 @@ If you work with Windows PCs, you know how important it is to keep them updated 
 
 Windows Update lets you choose a time window for installing updates and restarting the PC, but it doesn't guarantee that the actual restart will happen exactly when you want it. 
 
+For instance, Feature Update installation would take significantly longer than the regular update and when the installation and restart are scheduled to run at 6PM, one month it might restart at 6:25 and the other at 6:05. Not really predictable.
+
 But what if you want to make sure that the updates are installed earlier and the PC is restart at certain exact time (for example, when the shifts change)? 
 
-How can you do that?
+## How can we restart at the exact time?
 
 Unfortunately, we cannot rely on the default Windows Update scheduler for such scenario (I checked with Microsoft Support).
 
