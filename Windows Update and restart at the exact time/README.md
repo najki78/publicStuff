@@ -60,27 +60,28 @@ To add a new timeslot, you need to create a new $hashTable["DayX...."] record wi
 
 For example, for line 4 and 5, you can use something like this: 
 
-"/sc monthly /m * /mo FOURTH /d SUN /st 18:00" (fourth Sunday of the month at 6PM)
+- "**/sc monthly /m * /mo FOURTH /d SUN /st 18:00**" (fourth Sunday of the month at 6PM)
 
-"/sc WEEKLY /d FRI /st 17:32" (every Friday at 17:32)
-
-
-One limitation of the current version is that you have to create the Intune Script objects before running script "03 WindowsUpdateAndRestart6HoursLater - generate scripts.ps1", even with some dummy script. I might improve this in the future versions by creating the Intune Script automatically.
-
-If you want to avoid unexpected restarts, you need to check if the local time and time zone settings are correct. The schedules for updates and restarts use the local time on your PC.
+- **"/sc WEEKLY /d FRI /st 17:32"** (every Friday at 17:32)
 
 
-### To verify that the updates and restarts are working properly, follow these steps:
+One limitation of the current version is that you have to create the Intune Script objects before running script [03 WindowsUpdateAndRestart6HoursLater - generate scripts.ps1](https://github.com/najki78/publicStuff/blob/main/Windows%20Update%20and%20restart%20at%20the%20exact%20time/03%20WindowsUpdateAndRestart6HoursLater%20-%20generate%20scripts.ps1). I might improve this in the future versions by creating the Intune Script automatically.
+
+Note: If you want to avoid unexpected restarts, you need to check if the local time and time zone settings are correct. The schedules for updates and restarts use the local time on your PC.
+
+
+### To verify that the updates and restarts are working properly
 
 - Open Task Scheduler as Administrator (taskschd.msc).
 - Go to your Task Scheduler folder and check the trigger of the **RestartAfterWindowsUpdate** task. It should match your desired restart time.
 - Check the other task, **WindowsUpdateNoRestart**. It should be set for 6 hours before the restart time.
 
 
-### To remove the Windows Update configuration from the PC, do this:
+### To remove the Windows Update configuration from the PC
 
 - Open Task Scheduler as Administrator (taskschd.msc).
 - Delete both tasks, **RestartAfterWindowsUpdate** and **WindowsUpdateNoRestart**, in your Task Scheduler folder.
 - Delete all files with _WindowsUpdateAndRestart_ in the name from **C:\ProgramData\YourFolderName\Intune\** folder (WindowsUpdateAndRestart.txt, *-WindowsUpdateAndRestart.txt and WindowsUpdateAndRestart.ps1).
 
 I hope this helps. I also have a cleanup script and an Intune Remediation tool that can help you with this process. If you would find them useful, let me know.
+And if you have an idea how to make this even easier, write me as well please.
