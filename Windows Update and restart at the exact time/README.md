@@ -1,4 +1,6 @@
-# Windows Update and restart at the exact time
+# Scheduling restart after Windows Update at the exact time
+
+Link to the original article on [LinkedIn](https://www.linkedin.com/pulse/scheduling-restart-after-windows-update-exact-time-%25C4%25BEubo%25C5%25A1-nikol%25C3%25ADni-pptbe).
 
 If you work with Windows PCs, you know how important it is to keep them updated and secure. But sometimes, you need more control over when the updates are installed and when the PC is restarted. 
 
