@@ -41,7 +41,7 @@ The script and the "WindowsUpdateNoRestart" task write their logs to this file: 
 
 [03 WindowsUpdateAndRestart6HoursLater - generate scripts.ps1](https://github.com/najki78/publicStuff/blob/main/Windows%20Update%20and%20restart%20at%20the%20exact%20time/03%20WindowsUpdateAndRestart6HoursLater%20-%20generate%20scripts.ps1)
 
-The script creates scripts for different schedules and uploads them to Intune using Intune Scripts.
+This code creates scripts for different schedules and uploads them to Intune using Intune Scripts.
 
 To add a new timeslot, you need to create a new $hashTable["DayX...."] record with this structure:
 
