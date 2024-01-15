@@ -23,7 +23,7 @@ The solution consists of two scheduled tasks: one that runs the update script (*
 
 [01 WindowsUpdateAndRestart6HoursLater - embedded script.ps1](https://github.com/najki78/publicStuff/blob/main/Windows%20Update%20and%20restart%20at%20the%20exact%20time/01%20WindowsUpdateAndRestart6HoursLater%20-%20embedded%20script.ps1)
 
-The script is the one that runs as the task **WindowsUpdateNoRestart**. It is included in $scriptfile variable of the next script.
+This script runs as the task **WindowsUpdateNoRestart**. It is included in $scriptfile variable of the next script.
 
 
 [02 WindowsUpdateAndRestart6HoursLater - template.ps1](https://github.com/najki78/publicStuff/blob/main/Windows%20Update%20and%20restart%20at%20the%20exact%20time/02%20WindowsUpdateAndRestart6HoursLater%20-%20template.ps1)
