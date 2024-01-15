@@ -34,7 +34,7 @@ The PC will always restart at the specified time, regardless of whether it needs
 
 I use SCHTASKS command line tool for the tasks scheduling because New-ScheduledTaskTrigger cmdlet does not allow to create more flexible schedules, such as 'run on every 3rd Wednesday of every second month'.
 
-One challenge I faced was loading the [PSWindowsUpdate](https://www.powershellgallery.com/packages/PSWindowsUpdate/) module (unrelated to the module itself, that one is excellent!), because I had some issues with accessing Powershell Gallery through Zscaler. To detect the Gallery is reachable, I added some checks in the code.
+One challenge I faced was loading the [PSWindowsUpdate](https://www.powershellgallery.com/packages/PSWindowsUpdate/) module (unrelated to the module itself, that one is excellent!), because I had issues accessing Powershell Gallery through Zscaler from some countries. To detect the Gallery is reachable, I added some checks in the code.
 
 The script and the "WindowsUpdateNoRestart" task write their logs to this file: _C:\ProgramData\YourFolderName\Intune\[timestamp] WindowsUpdateAndRestart.txt_
 
