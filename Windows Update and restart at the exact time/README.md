@@ -47,7 +47,7 @@ This code creates scripts for different schedules and uploads them to Intune usi
 
 To add a new timeslot, you need to create a new $hashTable["DayX...."] record with this structure:
 
-- Line 1: [string] The name of the Intune Script (it will be updated)
+- Line 1: [string] The name of the Intune Script (the content will be replaced by the updated version)
 
 - Line 2: [string] The schedule of the **WindowsUpdateNoRestart** task using SCHTASKS (set it to run e.g. 6 hours before the restart to give enough time for the updates to download and install)
 
