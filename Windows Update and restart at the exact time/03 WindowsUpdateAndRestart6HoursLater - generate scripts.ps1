@@ -1,6 +1,6 @@
 ﻿# Generate scripts for different timeslots and upload them to Intune
 
-$version = "2024.01.15.01"
+$version = "2024.01.16.01"
 
 # location of these scripts
 $path = "C:\Temp\Windows Update and restart at the exact time\" 
@@ -147,11 +147,9 @@ $hashTable = @{}
     When adding a new timeslot, create a new $hashTable["DayX...."] record with the following structure:
 
     Line 1: [string] The name of the Script in Intune [to be replaced by a new version]
-    Line 2: [string] Used by previous version with Register-ScheduledTask (now obsolete when using 'SCHTASKS'), leave empty string
-    Line 3: [string] Used by previous version with Register-ScheduledTask (now obsolete when using 'SCHTASKS'), leave empty string
-    Line 4: [string] Schedule of "WindowsUpdateNoRestart" task using SCHTASKS (configured to run e.g. 6 hours before the restart to give the updates enough time to download and install)
-    Line 5: [string] Schedule of "RestartAfterWindowsUpdate" task using SCHTASKS
-    Line 6: [int] Restart delay in seconds (my default is 90 seconds; to leave enough time for the user to close the applications)
+    Line 2: [string] Schedule of "WindowsUpdateNoRestart" task using SCHTASKS (configured to run e.g. 6 hours before the restart to give the updates enough time to download and install)
+    Line 3: [string] Schedule of "RestartAfterWindowsUpdate" task using SCHTASKS
+    Line 4: [int] Restart delay in seconds (my default is 90 seconds; to leave enough time for the user to close the applications)
     
             # Examples for line 4 and 5: 
             "/sc monthly /m * /mo FOURTH /d SUN /st 18:00"
@@ -159,365 +157,38 @@ $hashTable = @{}
     
     #>
 
-# Auto-restart on the 2nd Sunday each month at 14:00 (2PM) - restart delay of 20 minutes (actual restart therefore at 14:20)
-$hashTable["Day7-2nd-Sun2PM-Delay20min"] = @( `
-'Update Ring SF AutoRestart – Day7 2nd Sun2PM Delay20min', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo SECOND /d sun /st 08:11"', `
-'"/sc monthly /m * /mo second /d sun /st 14:00"', `
-'1200'
-)
+# Couple of examples:
 
-$hashTable["Day1-EVRMon6AM"] = @( `
-'Update Ring SF AutoRestart - Day1 EVR Mon6AM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d Mon /st 00:01"', `
-'"/sc weekly /d Mon /st 06:00"', `
-'90'
-)
+    # Auto-restart on the 2nd Sunday each month at 14:00 (2PM) - restart delay of 20 minutes (actual restart therefore at 14:20)
+    $hashTable["Day7-2nd-Sun2PM-Delay20min"] = @( `
+    'Update Ring SF AutoRestart – Day7 2nd Sun2PM Delay20min', `
+    '"/sc monthly /m * /mo SECOND /d sun /st 08:11"', `
+    '"/sc monthly /m * /mo second /d sun /st 14:00"', `
+    '1200'
+    )
 
-$hashTable["Day1-EVRMon2_30PM"] = @( `
-'Update Ring SF AutoRestart - Day1 EVR Mon2_30PM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d Mon /st 08:31"', `
-'"/sc weekly /d Mon /st 14:30"', `
-'90'
-)
+    # Auto-restart every Friday at 06:50 (6:50APM) - restart delay of 90 seconds
+    $hashTable["Day5-EVRFri6_50AM"] = @( `
+    'Update Ring SF AutoRestart - Day5 EVR Fri6_50AM', `
+    '"/sc weekly /d Fri /st 00:51"', `
+    '"/sc weekly /d Fri /st 06:50"', `
+    '90'
+    )
 
-$hashTable["Day2-EVRTue6AM"] = @( `
-'Update Ring SF AutoRestart - Day2 EVR Tue6AM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d Tue /st 00:02"', `
-'"/sc weekly /d Tue /st 06:00"', `
-'90'
-)
-
-$hashTable["Day2-EVRTue7AM"] = @( `
-'Update Ring SF AutoRestart - Day2 EVR Tue7AM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d Tue /st 01:04"', `
-'"/sc weekly /d Tue /st 07:00"', `
-'90'
-)
-
-$hashTable["Day2-EVRTue2_30PM"] = @( `
-'Update Ring SF AutoRestart - Day2 EVR Tue2_30PM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d Tue /st 08:33"', `
-'"/sc weekly /d Tue /st 14:30"', `
-'90'
-)
-
-$hashTable["Day2-EVRTue6PM"] = @( `
-'Update Ring SF AutoRestart – Day2 EVR Tue6PM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d Tue /st 12:01"', `
-'"/sc weekly /d Tue /st 18:00"', `
-'90'
-)
-
-$hashTable["Day3-EVRWed6AM"] = @( `
-'Update Ring SF AutoRestart - Day3 EVR Wed6AM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d Wed /st 00:05"', `
-'"/sc weekly /d Wed /st 06:00"', `
-'90'
-)
-
-$hashTable["Day3-EVRWed2_15PM"] = @( `
-'Update Ring SF AutoRestart - Day3 EVR Wed2_15PM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d Wed /st 08:17"', `
-'"/sc weekly /d Wed /st 14:15"', `
-'90'
-)
-
-$hashTable["Day3-EVRWed2_30PM"] = @( `
-'Update Ring SF AutoRestart - Day3 EVR Wed2_30PM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d Wed /st 08:31"', `
-'"/sc weekly /d Wed /st 14:30"', `
-'90'
-)
-
-$hashTable["Day4-EVRThu6AM"] = @( `
-'Update Ring SF AutoRestart - Day4 EVR Thu6AM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d Thu /st 00:03"', `
-'"/sc weekly /d Thu /st 06:00"', `
-'90'
-)
-
-$hashTable["Day4-EVRThu2_30PM"] = @( `
-'Update Ring SF AutoRestart - Day4 EVR Thu2_30PM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d Thu /st 08:32"', `
-'"/sc weekly /d Thu /st 14:30"', `
-'90'
-)
-
-$hashTable["Day5-EVRFri6_50AM"] = @( `
-'Update Ring SF AutoRestart - Day5 EVR Fri6_50AM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d Fri /st 00:51"', `
-'"/sc weekly /d Fri /st 06:50"', `
-'90'
-)
-
-$hashTable["Day7-EVRSun6AM"] = @( `
-'Update Ring SF AutoRestart - Day7 EVR Sun6AM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d Sun /st 00:04"', `
-'"/sc weekly /d Sun /st 06:00"', `
-'90'
-)
-
-$hashTable["Day7-EVRSun2_30PM"] = @( `
-'Update Ring SF AutoRestart - Day7 EVR Sun2_30PM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d Sun /st 08:36"', `
-'"/sc weekly /d Sun /st 14:30"', `
-'90'
-)
-
-$hashTable["Day7-4thSun21_00"] = @( `
-'Update Ring SF AutoRestart - Day7 4th Sun21_00', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc monthly /m * /mo FOURTH /d SUN /st 15:00"', `
-'"/sc monthly /m * /mo FOURTH /d SUN /st 21:00"', `
-'1200'
-)
-
-$hashTable["Day7-3rdSun6AM"] = @( `
-'Update Ring SF AutoRestart - Day7 3rd Sun06_00', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc monthly /m * /mo THIRD /d SUN /st 00:10"', `
-'"/sc monthly /m * /mo THIRD /d SUN /st 06:00"', `
-'1200'
-)
-
-$hashTable["Day3-EVRWedNoon"] = @( `
-'Update Ring SF AutoRestart - Day3 Wed12_00', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc weekly /d WED /st 06:00"', `
-'"/sc weekly /d WED /st 12:00"', `
-'90'
-)
-
-$hashTable["Day3-2ndWed7_45AM"] = @( `
-'Update Ring SF AutoRestart - Day3 2nd Wed 7_45AM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc monthly /m * /mo SECOND /d WED /st 01:05"', `
-'"/sc monthly /m * /mo SECOND /d WED /st 07:45"', `
-'90'
-)
-
-$hashTable["Day7-3rdSun3AM"] = @( `
-'Update Ring SF AutoRestart – Day7 3rd Sun 3AM', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc monthly /m * /mo THIRD /d SUN /st 00:01"', `
-'"/sc monthly /m * /mo THIRD /d SUN /st 03:00"', `
-'1200'
-)
-
-$hashTable["Day3-3rdWedNoon"] = @( `
-'Update Ring SF AutoRestart – Day3 3rd Wed Noon', `
-'"(not needed)"', `
-'"(not needed)"', `
-'"/sc monthly /m * /mo THIRD /d WED /st 06:05"', `
-'"/sc monthly /m * /mo THIRD /d WED /st 12:00"', `
-'90'
-)
-
-$hashTable["Day3-EVRWed11AM"] = @( `
-'Update Ring SF AutoRestart - Day3 EVR Wed11AM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc weekly /d Wed /st 05:02"', `
-'"/sc weekly /d Wed /st 11:00"', `
-'90'
-)
-
-$hashTable["Day3-EVRWed7AM"] = @( `
-'Update Ring SF AutoRestart - Day3 EVR Wed 7AM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc weekly /d Wed /st 01:03"', `
-'"/sc weekly /d Wed /st 07:00"', `
-'90'
-)
-
-$hashTable["Day6-EVRSat15_00"] = @( `
-'Update Ring SF AutoRestart - Day6 EVR Sat 15_00', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc weekly /d Sat /st 10:04"', `
-'"/sc weekly /d Sat /st 15:00"', `
-'90'
-)
-
-$hashTable["Day7-3rdSun10_00-Delay20"] = @( `
-'Update Ring SF AutoRestart - Day7 3rd Sun 10_00 - Delay 20 min', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo THIRD /d SUN /st 04:04"', `
-'"/sc monthly /m * /mo THIRD /d SUN /st 10:00"', `
-'1200'
-)
-
-$hashTable["Day7-4thSun07_00-Delay20"] = @( `
-'Update Ring SF AutoRestart - Day7 4th Sun 07_00 - Delay 20 min', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo FOURTH /d SUN /st 01:01"', `
-'"/sc monthly /m * /mo FOURTH /d SUN /st 07:00"', `
-'1200'
-)
-
-$hashTable["Day5-1stFri06_30-Delay20"] = @( `
-'Update Ring SF AutoRestart - Day5 1st Fri 06_30 - Delay 20 min', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo FIRST /d FRI /st 00:31"', `
-'"/sc monthly /m * /mo FIRST /d FRI /st 06:30"', `
-'1200'
-)
-
-$hashTable["Day1-3rd-Mon-6AM"] = @( `
-'Update Ring SF AutoRestart - Day1 3rd Mon 6AM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo THIRD /d MON /st 00:01"', `
-'"/sc monthly /m * /mo THIRD /d MON /st 06:00"', `
-'90'
-)
-
-$hashTable["Day1-3rd-Mon-11AM"] = @( `
-'Update Ring SF AutoRestart - Day1 3rd Mon 11AM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo THIRD /d MON /st 00:01"', `
-'"/sc monthly /m * /mo THIRD /d MON /st 11:00"', `
-'90'
-)
-
-$hashTable["Day1-3rd-Mon-2_30PM"] = @( `
-'Update Ring SF AutoRestart - Day1 3rd Mon 2_30PM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo THIRD /d MON /st 00:01"', `
-'"/sc monthly /m * /mo THIRD /d MON /st 14:30"', `
-'90'
-)
-$hashTable["Day2-3rd-Tue-6AM"] = @( `
-'Update Ring SF AutoRestart - Day2 3rd Tue 6AM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo THIRD /d TUE /st 00:01"', `
-'"/sc monthly /m * /mo THIRD /d TUE /st 06:00"', `
-'90'
-)
-$hashTable["Day2-3rd-Tue-7AM"] = @( `
-'Update Ring SF AutoRestart - Day2 3rd Tue 7AM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo THIRD /d TUE /st 00:01"', `
-'"/sc monthly /m * /mo THIRD /d TUE /st 07:00"', `
-'90'
-)
-$hashTable["Day2-3rd-Tue-2_30PM"] = @( `
-'Update Ring SF AutoRestart - Day2 3rd Tue 2_30PM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo THIRD /d TUE /st 00:01"', `
-'"/sc monthly /m * /mo THIRD /d TUE /st 14:30"', `
-'90'
-)
-$hashTable["Day3-3rd-Wed-6AM"] = @( `
-'Update Ring SF AutoRestart - Day3 3rd Wed 6AM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo THIRD /d WED /st 00:01"', `
-'"/sc monthly /m * /mo THIRD /d WED /st 06:00"', `
-'90'
-)
-$hashTable["Day3-3rd-Wed-2_15PM"] = @( `
-'Update Ring SF AutoRestart - Day3 3rd Wed 2_15PM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo THIRD /d WED /st 00:01"', `
-'"/sc monthly /m * /mo THIRD /d WED /st 14:15"', `
-'90'
-)
-$hashTable["Day3-3rd-Wed-2_30PM"] = @( `
-'Update Ring SF AutoRestart - Day3 3rd Wed 2_30PM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo THIRD /d WED /st 00:01"', `
-'"/sc monthly /m * /mo THIRD /d WED /st 14:30"', `
-'90'
-)
-$hashTable["Day4-3rd-Thu-6AM"] = @( `
-'Update Ring SF AutoRestart - Day4 3rd Thu 6AM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo THIRD /d THU /st 00:01"', `
-'"/sc monthly /m * /mo THIRD /d THU /st 06:00"', `
-'90'
-)
-$hashTable["Day4-3rd-Thu-2_30PM"] = @( `
-'Update Ring SF AutoRestart - Day4 3rd Thu 2_30PM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo THIRD /d THU /st 00:01"', `
-'"/sc monthly /m * /mo THIRD /d THU /st 14:30"', `
-'90'
-)
-$hashTable["Day5-3rd-Fri-6AM"] = @( `
-'Update Ring SF AutoRestart - Day5 3rd Fri 6AM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo THIRD /d FRI /st 00:01"', `
-'"/sc monthly /m * /mo THIRD /d FRI /st 06:00"', `
-'90'
-)
-$hashTable["Day5-3rd-Fri-2_30PM"] = @( `
-'Update Ring SF AutoRestart - Day5 3rd Fri 2_30PM', `
-'"(do not leave empty)"', `
-'"(do not leave empty)"', `
-'"/sc monthly /m * /mo THIRD /d FRI /st 00:01"', `
-'"/sc monthly /m * /mo THIRD /d FRI /st 14:30"', `
-'90'
-)
+    # Auto-restart on the 3rd Sunday each month at 10:00 (10AM) - restart delay of 20 minutes (actual restart therefore at 10:20)
+    $hashTable["Day7-3rdSun10_00-Delay20"] = @( `
+    'Update Ring SF AutoRestart - Day7 3rd Sun 10_00 - Delay 20 min', `
+    '"/sc monthly /m * /mo THIRD /d SUN /st 04:04"', `
+    '"/sc monthly /m * /mo THIRD /d SUN /st 10:00"', `
+    '1200'
+    )
     
 # Define the template for the main scripts
 $firstLines = @'
     
-    $triggerWU = {0} 
-    $triggerRestart = {1}
-    $schtasksWU = {2} 
-    $schtasksRestart = {3}
-    $restartDelay = {4}
+    $schtasksWU = {0} 
+    $schtasksRestart = {1}
+    $restartDelay = {2}
 
 '@
 
@@ -551,7 +222,7 @@ foreach ($key in $hashTable.Keys) {
 
     # Generate the main scripts using the template and the variable values
 
-    $scriptContent1 = $firstLines -f $value[1],$value[2],$value[3],$value[4],$value[5]
+    $scriptContent1 = $firstLines -f $value[1],$value[2],$value[3]
     # Write a text to a file using UTF-8 without BOM
     
     $scriptContent = $scriptContent1 + "`r`n" + $scriptContent2
