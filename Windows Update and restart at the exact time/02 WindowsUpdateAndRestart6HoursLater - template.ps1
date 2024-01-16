@@ -1,23 +1,29 @@
 ﻿<#
-# These values need to be uncommented in the target script
+# These three variables need to be present in the target script:
+# They will be inserted using "03 WindowsUpdateAndRestart6HoursLater - generate scripts.ps1"
 
-    # used by previous version with Register-ScheduledTask (now obsolete when using 'SCHTASKS'), leave empty strings
-
-    $triggerWU = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At "08:30am" -RandomDelay (New-TimeSpan -Hours 1)
-    $triggerRestart = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At "2:30PM"
-
-    # mandatory
-
-    $schtasksWU 
-        # Examples: 
+    # schedule (using SCHTASKS syntax) for "WindowsUpdateNoRestart" task
+    $schtasksWU = "/sc monthly /m * /mo THIRD /d SUN /st 04:04"
+    
+        # Other examples: 
         # $schtasksWU = "/sc monthly /m * /mo FOURTH /d SUN /st 18:00"
         # $schtasksWU = "/sc WEEKLY /d FRI /st 17:32"
-    $schtasksRestart # e.g.        $schtasksRestart = "/sc monthly /m * /mo SECOND /d TUE /st 10:00"
-    $restartDelay = <in seconds>
+
+    # schedule (using SCHTASKS syntax) for "RestartAfterWindowsUpdate" task
+    $schtasksRestart = "/sc monthly /m * /mo THIRD /d SUN /st 10:00"
+    
+        # Other example: 
+        # $schtasksRestart = "/sc monthly /m * /mo SECOND /d TUE /st 10:00"
+    
+    # restart delay in seconds
+    $restartDelay = 90 
+
+        # Example: 
+        # $restartDelay = 1200 # 20 minutes, numeric value, no quotes
 
 #>
 
-# Schedule the task that runs Windows Update, to run 6 hours before we run another task that restarts the device
+# TEMPLATE - Schedule the task that runs Windows Update, to run 6 hours before we run another task that restarts the device
 
 $version = "2024.01.15.01"
 $path = "C:\ProgramData\YourFolderName\Intune\" 
