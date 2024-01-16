@@ -47,20 +47,16 @@ This code creates scripts for different schedules and uploads them to Intune usi
 
 To add a new timeslot, you need to create a new $hashTable["DayX...."] record with this structure:
 
-- Line 1: [string] The name of the Intune Script (it will be replaced by the new version)
+- Line 1: [string] The name of the Intune Script (it will be updated)
 
-- Line 2: [string] Not used anymore, leave it as an empty string (used by previous version of the script for Register-ScheduledTask parameters)
+- Line 2: [string] The schedule of the **WindowsUpdateNoRestart** task using SCHTASKS (set it to run e.g. 6 hours before the restart to give enough time for the updates to download and install)
 
-- Line 3: [string] Not used anymore, leave it as an empty string
+- Line 3: [string] The schedule of the **RestartAfterWindowsUpdate** task using SCHTASKS
 
-- Line 4: [string] The schedule of the **WindowsUpdateNoRestart** task using SCHTASKS (set it to run e.g. 6 hours before the restart to give enough time for the updates to download and install)
-
-- Line 5: [string] The schedule of the **RestartAfterWindowsUpdate** task using SCHTASKS
-
-- Line 6: [int] The restart delay in seconds (I use 90 seconds by default; to give enough time for the user to save their work). The shutdown command during those 90 seconds can be cancelled by the user (no admin rights required) during the waiting period. Just type shutdown /a in the command prompt.
+- Line 4: [int] The restart delay in seconds (I use 90 seconds by default; to give enough time for the user to save their work). The shutdown command during those 90 seconds can be cancelled by the user (no admin rights required) during the waiting period. Just type shutdown /a in the command prompt.
 
 
-For example, for line 4 and 5, you can use something like this: 
+For example, for lines 2 and 3, you can use something like this: 
 
 - "**/sc monthly /m * /mo FOURTH /d SUN /st 18:00**" (fourth Sunday of the month at 6PM)
 
