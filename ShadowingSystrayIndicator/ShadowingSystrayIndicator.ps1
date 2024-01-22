@@ -11,6 +11,7 @@
 
     2022-10-12B Initial version
     2022-10-13A tidying up a bit
+    2022-10-18A
         
 #> 
 
@@ -21,7 +22,7 @@ Install-Module ps2exe
 Invoke-ps2exe "ShadowingSystrayIndicator.ps1"
 #>
 
-$version = "2022-10-18A"
+$version = "2024.01.22.01"
 
 # https://stackoverflow.com/questions/59349635/change-tray-icon-based-on-event?rq=1
 
@@ -133,14 +134,16 @@ $Current_Folder = split-path $MyInvocation.MyCommand.Path
  
     $dllPath = "$env:SystemRoot\System32\shell32.dll"
     $nofImages = [Shell32_Extract]::ExtractIconEx($dllPath, -1, [ref] $phiconLarge, [ref] $phiconSmall, 0)
+    
     $nofIconsExtracted = [Shell32_Extract]::ExtractIconEx($dllPath, 160, [ref] $phiconLarge, [ref] $phiconSmall, 1)  # second parameter is (icon index - 1)
     $onlineIcon = [System.Drawing.Icon]::FromHandle($phiconSmall);
     
 # use this icon when notepad is not running
 #$offlineIcon = [System.Drawing.Icon]::ExtractAssociatedIcon("C:\Windows\System32\calc.exe")     
 
-    $dllPath = "$env:SystemRoot\System32\shell32.dll"
-    $nofImages = [Shell32_Extract]::ExtractIconEx($dllPath, -1, [ref] $phiconLarge, [ref] $phiconSmall, 0)
+    #$dllPath = "$env:SystemRoot\System32\shell32.dll"
+    #$nofImages = [Shell32_Extract]::ExtractIconEx($dllPath, -1, [ref] $phiconLarge, [ref] $phiconSmall, 0)
+    
     $nofIconsExtracted = [Shell32_Extract]::ExtractIconEx($dllPath, 208, [ref] $phiconLarge, [ref] $phiconSmall, 1)  # second parameter is (icon index - 1)
     $offlineIcon = [System.Drawing.Icon]::FromHandle($phiconSmall);
 
@@ -229,5 +232,6 @@ finally
         }
     }
 
-    Stop-Process -Id $PID
+    # Make PowerShell Disappear - Thanks Chrissy
+    #Stop-Process -Id $PID
 }
