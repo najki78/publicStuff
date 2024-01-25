@@ -1,5 +1,8 @@
 ﻿# initiateOnDemandProactiveRemediation
 
+# Thank you Damien Van Robaeys! - https://www.systanddeploy.com/2023/07/run-on-demand-remediation-script-on.html
+# https://learn.microsoft.com/en-us/graph/api/intune-devices-manageddevice-initiateondemandproactiveremediation?view=graph-rest-beta
+
 $version = "2024.01.25.01"
 
 cls
@@ -14,7 +17,7 @@ $DebugPreference = 'SilentlyContinue'
 ## Functions
 ##############################
 
-# 2023-09-13 modified version, the actual token is returned as xxxx.access_token
+# The actual token is returned as (Get-MSGraphAuthToken).access_token
 Function Get-MSGraphAuthToken {
     [cmdletbinding()]
     Param(
@@ -31,15 +34,14 @@ Function Get-MSGraphAuthToken {
 
     $Response = Invoke-RestMethod -Method Post -Uri $AuthUri -Body $AuthBody
     If ($Response.access_token) {
-        #return $Response.access_token
-        return $Response ### 2023-09-13 Changed return value, instead of $Response.access_token, now returning the whole object $Response    
+        return $Response 
     }
     Else {
         Throw "Authentication failed"
     }
 }
 
-# 2023-09-13 very ugly function (uses global variables which is bad practice) to check if access token is about to expire and if it does, renews it
+# Very ugly function (uses global variables $Token and $loginMgGraph which is a bad practice) to check if access token is about to expire and if it does, renews it
 function refreshAccessTokenIfNeeded {
 
     # Check if the access token is valid for at least 10 minutes
@@ -51,18 +53,13 @@ function refreshAccessTokenIfNeeded {
     if ($TimeDifference.TotalMinutes -lt $ExpirationThreshold) {
     
         Write-Progress "[Graph API] Renewing access token."
-
         $global:Token = Get-MSGraphAuthToken -credential $global:Credential -TenantID $global:TenantID
-        # $TokenReadOnly.expires_on
         $global:loginMgGraph = Connect-MgGraph -AccessToken (ConvertTo-SecureString $global:Token.access_token -AsPlainText -Force)
-        #$global:loginMgGraph = Connect-MgGraph -AccessToken $global:Token.access_token
-    
         Write-Progress "$( $global:loginMgGraph )"
 
     }
 }
 
-# 2023-10-04 added 'refreshAccessTokenIfNeeded'
 Function Invoke-MSGraphQuery {
     [CmdletBinding(DefaultParametersetname = "Default")]
     Param(
@@ -105,9 +102,6 @@ Function Invoke-MSGraphQuery {
     [array]$returnvalue = $()
     Try {
 
-            #refreshAccessTokenIfNeeded
-            #$token = $global:token.access_token
-
         If ($body) {
             $Response = Invoke-RestMethod -Uri $URI -Headers $authHeader -Body $Body -Method $method -ErrorAction Stop -ContentType "application/json"
         }
@@ -116,8 +110,6 @@ Function Invoke-MSGraphQuery {
         }
     }
     Catch {
-        
-        #Write-Information $Error[0].ErrorDetails.Message 
 
         If (($Error[0].ErrorDetails.Message | ConvertFrom-Json -ErrorAction SilentlyContinue).error.Message -eq 'Access token has expired.') { #  -and $tokenrefresh
             refreshAccessTokenIfNeeded
@@ -126,9 +118,6 @@ Function Invoke-MSGraphQuery {
         Else {
             Throw $_
         }
-        
-        #refreshAccessTokenIfNeeded
-        #$token = $global:token.access_token
         
     }
 
@@ -156,40 +145,6 @@ Function Invoke-MSGraphQuery {
         }
     }
     Return $returnvalue
-}
-
-# 2024.01.08.01
-# without timezone information (time in UTC), only alphanumeric characters
-function timestampUTC {
-
-    try {
-
-        return "$((get-date -ErrorAction Stop).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ"))"  
-        # the actual time (on the clock) + current timezone shift
-
-    } catch {
-
-        return "yyyy-MM-ddTHH:mm:ssZ"
-
-    }
-
-}
-
-# 2024.01.08.01
-# without timezone information (time in UTC), suitable for file names etc (colon character removed)
-function timestampUTC2 {
-
-    try {
-
-        return "$((get-date -ErrorAction Stop).ToUniversalTime().ToString("yyyy-MM-ddTHHmmssZ"))" 
-        # the actual time (on the clock) + current timezone shift
-
-    } catch {
-
-        return "yyyy-MM-ddTHHmmssZ"
-
-    }
-
 }
 
 function Load-Module {
@@ -256,7 +211,7 @@ function Load-Module {
                 Write-Warning "InnerException: $( $exception.InnerException )"
         } catch {}
 
-        exitRunbook -errorCode 1 -outputString "[Exception] Unable to import $($m) module. Exiting."
+        exit 1 # "[Exception] Unable to import $($m) module. Exiting."
 
     }
 
@@ -264,106 +219,26 @@ function Load-Module {
 
 }
 
-function exitRunbook {
-    param (
-        [Parameter (Mandatory=$false)][int] $errorCode = 0, # 0 =  success
-        [Parameter (Mandatory=$true)][string] $outputString,
-        [Parameter (Mandatory=$false)][switch] $restart # if yes, restart the device afterwards
-    )
-
-    # Create a hashtable (runbook output)
-    $runbookOutput = [ordered]@{}
-    $runbookOutput["errorCode"] = "$errorCode"
-    $runbookOutput["outputString"] = $outputString -replace '\\n', '' -replace '\\r', '' -replace ' +', ' ' -replace '\\"', '"'
-
-    # Convert the hashtable to a JSON object
-    #Getting rid of formatting errors and converting to json
-    $runbookOutputJSON = $($($runbookOutput | ConvertTo-Json -ErrorAction Continue) -replace '\\n', '' -replace '\\r', '' -replace ' +', ' ')  # replace "`r`n", "" # originally $($($runbookOutput | ConvertTo-Json) -replace "rn", "" -replace " ", "")
-
-    # Write-Output $runbookOutputJSON # to be further processed 
-    # Write-Output "Download the latest version from \\c0040w0040p.clarios.com\EUCImaging\Windows_10\Scripts\AutopilotHashUploadTool"
-
-    if($errorCode -ne 0) {
-        Write-Warning $runbookOutputJSON   # non-zero return code = something is wrong
-    }
-
- #   If ($global:logfile) { 
- #       Stop-Transcript | Out-Null 
- #       Write-Output "Transcript file: $($global:logfile)"
- #   }
-
-    if ($restart) { & shutdown.exe /t 5 /r /c "Clarios - Planned system restart." /d p:2:17 }
-
-    exit $errorCode
-
-}
-
 ##############################
 ## Variables
 ##############################
 
-$tenantID = "<yourAzureTenantID>"
-
-$subscriptionID = "ebf92555-9049-43d9-91d9-963b798a987b"
-# Subscription: Clarios-GI-Production-001, Subscription ID: ebf92555-9049-43d9-91d9-963b798a987b
-# Subscription: Clarios-GI-SandBox-001, Subscription ID: e8d83aa0-55b3-470f-b761-2f2d93e7e573
-
 $graphApiVersion = "beta"
-$ApplicationID   = "feb03ef7-7bb5-4042-8111-43c2fc04df3b"
+
+$tenantID = "<yourAzureTenantID>"
+$ApplicationID   = "<your App ID>"
 
 ############################################################
-## Installing Powershell modules
+## Login to Graph using Azure App
 ############################################################
-
-#    Load-Module Az.Accounts # -version "2.12.1"
-#    Load-Module Az.KeyVault
-    #Load-Module Az.Automation
-
-    ### Issues with Microsoft.Graph v2.9.0, version 2.8.0 worked fine
-    ### testing version 2.10.0
-
-    # https://www.powershellgallery.com/packages/Microsoft.Graph.Authentication/
-#    Load-Module microsoft.graph.authentication # -version "2.10.0"
-        
-    # https://www.powershellgallery.com/packages/Microsoft.Graph.Groups/
-#    Load-Module microsoft.graph.groups -version "2.10.0"
-        
-    # https://www.powershellgallery.com/packages/Microsoft.Graph.Identity.DirectoryManagement/
-#    Load-Module Microsoft.Graph.Identity.DirectoryManagement -version "2.10.0"
-        
-    #### Load-Module Microsoft.Graph.Identity.SignIns # Bitlocker - Get-MgInformationProtectionBitlockerRecoveryKey --- Application permissions not supported --- see https://learn.microsoft.com/en-us/graph/api/bitlockerrecoverykey-get?view=graph-rest-beta#Permissions
-        
-    # https://www.powershellgallery.com/packages/Microsoft.Graph.DeviceManagement/
- #   Load-Module Microsoft.Graph.DeviceManagement  -version "2.10.0"
-    # Get-MgDeviceManagementManagedDevice 
-
-
-    # https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.beta.devicemanagement/update-mgbetadevicemanagementdevicehealthscript?view=graph-powershell-beta
- #   Load-Module Microsoft.Graph.Beta.DeviceManagement # Update-MgBetaDeviceManagementDeviceHealthScript
-
-
-
-
-# https://www.systanddeploy.com/2023/07/run-on-demand-remediation-script-on.html
-# https://learn.microsoft.com/en-us/graph/api/intune-devices-manageddevice-initiateondemandproactiveremediation?view=graph-rest-beta
-# https://learn.microsoft.com/en-us/mem/intune/fundamentals/remediations
-
-# it requires: DeviceManagementManagedDevices.PrivilegedOperations.All 
-
-#Invoke-MgGraphRequest -Uri $RemediationScript_URL -Method POST -Body $RemediationScript_Body
-
-
- 
-    ############################################################
-    ## Login to Graph using Azure App
-    ############################################################
     
+# Azure App requires 'DeviceManagementManagedDevices.PrivilegedOperations.All' permission 
+
     try {
 
-        if (-not $AppSecret) {
-                $AppSecret = (Get-Credential -Message "Enter your password" -UserName $ApplicationID).Password
-        }
-
+        # in this example, using 'Client secret' to authenticate to Azure App
+        $AppSecret = (Get-Credential -Message "Enter your password" -UserName $ApplicationID).Password
+       
         $Credential = New-Object System.Management.Automation.PSCredential($ApplicationID, $AppSecret )
         $Token = Get-MSGraphAuthToken -credential $Credential -TenantID $TenantID
         $loginMgGraph = Connect-MgGraph -AccessToken (ConvertTo-SecureString $Token.access_token -AsPlainText -Force)
@@ -380,7 +255,6 @@ $ApplicationID   = "feb03ef7-7bb5-4042-8111-43c2fc04df3b"
         Write-Output "[Connect-MgGraph] Not connected to Graph. Exiting."
         exit 1
     }
-
   
 # Get the Remediation script ID from the Intune portal
 # https://doitpsway.com/force-redeploy-of-intune-scripts-even-remediation-ones-using-powershell
@@ -397,10 +271,10 @@ $listIntuneDevice_IDs += "<Intune Device ID #X>"
     foreach($IntuneDevice_ID in $listIntuneDevice_IDs) {
       
         $RemediationScript_URL = "https://graph.microsoft.com/beta/deviceManagement/managedDevices('$IntuneDevice_ID')/initiateOnDemandProactiveRemediation"                              
-        Write-Output "$(timestampUTC) - $IntuneDevice_ID - starting..."
+        Write-Output "$IntuneDevice_ID - starting..."
         
         $response = Invoke-MSGraphQuery -method POST -URI $RemediationScript_URL -token $token.access_token -Body ($RemediationScript_Body | ConvertTo-Json) -ErrorAction Continue
-        Write-Output "$(timestampUTC) - $IntuneDevice_ID - response: $($response)"
+        Write-Output "$IntuneDevice_ID - response: $($response)"
 
         Start-Sleep -Seconds 2 # no reason, just in order not to overload Graph and hit some requests limit
 
