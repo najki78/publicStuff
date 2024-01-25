@@ -790,9 +790,22 @@ $Code | Out-File "$($path)ChangeAutologonPassword.ps1" -force
         Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "DefaultPassword" -Force -ErrorAction Continue
 
     } catch {
-        Write-OUtput "Exception #2"
+        Write-OUtput "Exception - AutoAdminLogon and removing clear text DefaultPassword"
     }
     
 Create-Task -Argument "-file ""$($path)ChangeAutologonPassword.ps1"""
+
+# cleanup
+
+    try {
+
+        # Since Intune keeps the local copies of the detection and remediation scripts (requires local admin to access the folder), delete the local copy of this script...
+        $tmpScript = $MyInvocation.MyCommand.Path
+        # remove the script if it runs as a Remediation
+        if ($tmpScript.StartsWith("$([System.Environment]::GetEnvironmentVariable("ProgramFiles(x86)"))\Microsoft Intune Management Extension\")) {
+            Remove-Item $tmpScript -Force
+        } 
+    
+    } catch {}
 
 exit 0
