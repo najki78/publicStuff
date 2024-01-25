@@ -1,14 +1,6 @@
-﻿# retrieve Autologon information from Shopfloor PC
+﻿# Get Autologon information from PCs
 
-$version = "2024.01.15.01"
-
-# serial number; 
-# device name; 
-# Intune Device ID (Subject from the Intune certificate); 
-# Intune Device ID (from registry); 
-# account used; 
-# autologon account used - from registry
-# etc
+$version = "2024.01.25.01"
 
 cls
 
@@ -168,19 +160,14 @@ $signature = @"
   }
 }
 
-# 2024.01.08.01
 # without timezone information (time in UTC), only alphanumeric characters
 function timestampUTC {
 
     try {
-
         return "$((get-date -ErrorAction Stop).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ"))"  
         # the actual time (on the clock) + current timezone shift
-
     } catch {
-
         return "yyyy-MM-ddTHH:mm:ssZ"
-
     }
 
 }
@@ -189,6 +176,40 @@ try {
 
     # those that will have nested hashtables need to be inserted like arrays first, the other, non-nested, elements do not have to be predefined like this
     $outputJSON = @{}
+
+    # THE MOST IMPORTANT PART OF THE SCRIPT, ACTUAL AUTOLOGON ACCOUNT
+    try {
+        if(Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -ErrorAction SilentlyContinue) {
+            $outputJSON.AutologonRegistryDefaultDomainName = "$(Get-ItemPropertyValue "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -ErrorAction SilentlyContinue)"   
+        }
+    } catch {}
+
+    # IF THE VALUE = 1, AUTOLOGON IS CONFIGURED
+    try {
+        if(Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -ErrorAction SilentlyContinue) {
+            $outputJSON.AutologonRegistryAutoAdminLogon = "$(Get-ItemPropertyValue "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -ErrorAction SilentlyContinue)"   
+        }
+    } catch {}
+
+
+    # DO NOT RETRIEVE FROM PC IN PRODUCTION, IN CASE CLEAR TEXT PASSWORD IS USED, IT WILL BE PART OF THE INTUNE REMEDIATION REPORT
+    # https://learn.microsoft.com/en-us/troubleshoot/windows-server/user-profiles-and-logon/turn-on-automatic-logon
+    try {
+        if(Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -ErrorAction SilentlyContinue) {
+            $outputJSON.AutologonRegistryDefaultPassword = "$(Get-ItemPropertyValue "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -ErrorAction SilentlyContinue)"   
+        }
+    } catch {}
+
+    try {
+        if(Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -ErrorAction SilentlyContinue) {
+            $outputJSON.AutologonRegistryDefaultUserName = "$(Get-ItemPropertyValue "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -ErrorAction SilentlyContinue)"   
+        }
+    } catch {}
+
+
+    #############################################################################
+    # Optional part - useful data, but not necessary for Autologon password change
+    #############################################################################
 
     try {
         $outputJSON.serialNumber = "$((Get-CimInstance win32_bios -ErrorAction SilentlyContinue).SerialNumber)"
@@ -209,9 +230,6 @@ try {
     try {
         $outputJSON.TimeStamp = timestampUTC 
     } catch {}
-
-    #$User = New-Object System.Security.Principal.NTAccount($env:UserName)
-    #$sid = $User.Translate([System.Security.Principal.SecurityIdentifier]).value
     
     # https://www.reddit.com/r/Intune/comments/m74luq/obtaining_intune_objectid_from_local_device/
     # Intune Device ID from Autopilot information in registry
@@ -221,7 +239,7 @@ try {
         }
     } catch {}
 
-<#
+    # the actual value is not as important as a fact that there is some value, because it means that the autologon password is configured as LSA secret
     try {
 
         # this needs to be uncommented to work under other than SYSTEM account
@@ -232,37 +250,12 @@ try {
             $outputJSON.SecretsDefaultPasswordCurrVal = "$(Get-ItemPropertyValue HKLM:\Security\Policy\Secrets\DefaultPassword\CurrVal -Name "(default)" -ErrorAction SilentlyContinue)"
         }
 
+        # When the password has been last changed
         # [HKEY_LOCAL_MACHINE\Security\Policy\Secrets\DefaultPassword\OupdTime]
-        #if(Get-ItemProperty "HKLM:\Security\Policy\Secrets\DefaultPassword\OupdTime" -Name "(default)" -ErrorAction SilentlyContinue) {
-        #    $outputJSON.SecretsDefaultPasswordOupdTime = "$(Get-ItemPropertyValue HKLM:\Security\Policy\Secrets\DefaultPassword\OupdTime -Name "(default)" -ErrorAction SilentlyContinue)"
-        #}
-
-    } catch {}
- #>
-
-    # https://learn.microsoft.com/en-us/troubleshoot/windows-server/user-profiles-and-logon/turn-on-automatic-logon
-    try {
-        if(Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -ErrorAction SilentlyContinue) {
-            $outputJSON.AutologonRegistryDefaultPassword = "$(Get-ItemPropertyValue "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -ErrorAction SilentlyContinue)"   
+        if(Get-ItemProperty "HKLM:\Security\Policy\Secrets\DefaultPassword\OupdTime" -Name "(default)" -ErrorAction SilentlyContinue) {
+            $outputJSON.SecretsDefaultPasswordOupdTime = "$(Get-ItemPropertyValue HKLM:\Security\Policy\Secrets\DefaultPassword\OupdTime -Name "(default)" -ErrorAction SilentlyContinue)"
         }
-    } catch {}
 
-    try {
-        if(Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -ErrorAction SilentlyContinue) {
-            $outputJSON.AutologonRegistryDefaultUserName = "$(Get-ItemPropertyValue "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -ErrorAction SilentlyContinue)"   
-        }
-    } catch {}
-
-    try {
-        if(Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -ErrorAction SilentlyContinue) {
-            $outputJSON.AutologonRegistryDefaultDomainName = "$(Get-ItemPropertyValue "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -ErrorAction SilentlyContinue)"   
-        }
-    } catch {}
-
-    try {
-        if(Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -ErrorAction SilentlyContinue) {
-            $outputJSON.AutologonRegistryAutoAdminLogon = "$(Get-ItemPropertyValue "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -ErrorAction SilentlyContinue)"   
-        }
     } catch {}
 
     try {
@@ -309,8 +302,7 @@ try {
         $null = Remove-PSDrive -Name HKU -ErrorAction SilentlyContinue
 
         $outputJSON.PrimaryUserWorkplaceJoinUserID = "$($UserID)"
-        #$outputJSON.PrimaryUserWorkplaceJoinSID = "$($SID)"
-
+        
     } catch {}
 
 
@@ -375,7 +367,6 @@ try {
 
         $outputJSON.PrimaryUserCloudDomainJoin = "$($PrimaryUserUPN)"
 
-
         # approach will not work with multisession currently, as there might be more than one explorer.exe
         $explorerProcess = @(Get-WmiObject -Query "Select * FROM Win32_Process WHERE Name='explorer.exe'" -ErrorAction SilentlyContinue)
         if ($explorerProcess.Count -ne 0) {
@@ -402,11 +393,13 @@ try {
             #Write-Output "PrimaryUser"
         }
 
-
         $outputJSON.PrimaryUserExplorerProcess = "$($LoggedOnUserUPN)"
 
-
     } catch {}
+
+    #############################################################################
+    # End of the optional part 
+    #############################################################################
 
     # now we convert it to JSON
     $outputString = $outputJSON | ConvertTo-Json -Depth 100 -Compress # -ErrorAction SilentlyContinue
@@ -416,7 +409,7 @@ try {
 
     if($outputString.Length > 2046) {
 
-    #    Write-Output "The output is too long: $($outputString.Length)"
+        # The output is too long
         Write-Output "{ ""OutputLength"":""$($outputString.Length)"" }"
 
     } else {
@@ -439,10 +432,9 @@ try {
 
     } catch {}
 
-    #Write-Output $outputString 
     Write-Output "{ ""Exception"":""$($outputString)"" }"
     
-    exit 1 # run remediation        
+    exit 1 # run remediation (currently none is defined)        
 
 }
 
