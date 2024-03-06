@@ -10,19 +10,19 @@ variables:
   - name: BACKUP_FOLDER
     value: prod-intune
   - name: TENANT_NAME
-    value: clarios.onmicrosoft.com
+    value: COMPANY.onmicrosoft.com
   - name: USER_EMAIL
-    value: IT_Intune_Backup@clarios.com
+    value: IT_Intune_Backup@COMPANY.com
   - name: USER_NAME
     value: IT_Intune_Backup
   - name: STORAGEACCOUNT_NAME
-    value: sauseast2prdeus
+    value: <insert value>
   - name: RESOURCEGROUP_NAME
-    value: rg-useast2Prod-EUS-Automation
+    value: <insert value>
   - name: BACKUPCONTAINER_NAME
-    value: backup-intune
+    value: <insert value>
   - name: SUBSCRIPTION_ID
-    value: ebf92555-9049-43d9-91d9-963b798a987b
+    value: <insert value>
   # CLIENT_ID (Id of the SP that whould be used for authentication) and CLIENT_SECRET needs to be set separately using pipeline variables setting (so the secret is not saved as plaintext)
 
 jobs:
@@ -525,7 +525,7 @@ jobs:
 
       - task: AzurePowerShell@5
         inputs:
-          azureSubscription: 'Clarios-GI-Production-001 - CL00266-Intune-Entra-Backup-ReadOnly'
+          azureSubscription: '<insert name of service endpoint>'
           ScriptType: 'InlineScript'
           Inline: |
             try {
