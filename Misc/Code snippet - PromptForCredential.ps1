@@ -1,5 +1,16 @@
 ﻿# Code snippet - PromptForCredential
 
+# Recently, we had issues obtaining user credentials in PowerShell scripts on Windows 11. While we do not know yet the exact cause, we prepared a workaround to prevent our scripts from failing. 
+
+# The issue arises when trying to use the Get-Credential cmdlet or the $host.ui.PromptForCredential method in a PowerShell script. 
+# These are standard ways to prompt for user credentials in a secure manner. 
+# However, for some users, these methods are failing without any clear error message.
+
+# The following script provides a workaround for this issue. 
+# It first tries to use Get-Credential or $host.ui.PromptForCredential. 
+# If these fail, it attempts an alternative method using System.Windows.Forms (function PromptForCredentialWindowsForms). 
+# If even that fails, it prompts for the password in text form. 
+
 # 2024.04.15.01 Ľuboš Nikolíni
 
 # Known issues:
