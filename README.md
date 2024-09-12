@@ -1,5 +1,10 @@
 # publicStuff
 
+## User2DeviceMapper
+A script to keep your user and device groups in sync. It identifies members of a user group, retrieves their Windows devices from Entra ID, and adds them to the chosen device group.
+If someone leaves the user group, their devices are removed from the device group to stay current.
+You can run the script regularly as an Azure Automation runbook for frequent syncing, or use the core function populateDeviceGroup in your own code.
+
 ## Windows Update and restart at the exact time
 * [(Intune and PowerShell) - Windows Update and restart at the exact time](https://github.com/najki78/publicStuff/tree/main/Windows%20Update%20and%20restart%20at%20the%20exact%20time)
 
