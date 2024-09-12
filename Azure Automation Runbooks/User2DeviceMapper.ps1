@@ -26,7 +26,7 @@ Param()
 ## Variables
 ##############################
 
-$version = "2024.09.12.01"
+$version = "2024.09.12.02"
 
 $VerbosePreference = 'SilentlyContinue' 
 $InformationPreference = 'Continue'
@@ -367,7 +367,7 @@ try {
     $loginMgGraph = Connect-MgGraph -AccessToken (ConvertTo-SecureString $Token.access_token -AsPlainText -Force)
 
     # <Users Group Entra Object ID> -> <Device Group Entra Object ID>
-    populateDeviceGroup -usersGroupID <Users Group Entra Object ID> -deviceGroupID <Device Group Entra Object ID> 
+    populateDeviceGroup -usersGroupID "Users Group Entra Object ID" -deviceGroupID "Device Group Entra Object ID"
     # if you want to keep manually added devices in device group, use the parameter '-leaveCurrentDevicesInTheDeviceGroup'
 
     exitRunbook -outputString $tmpOutput  
