@@ -12,6 +12,7 @@
     2022-10-12B Initial version
     2022-10-13A tidying up a bit
     2022-10-18A
+    2024.12.10.01 Bug fixed
         
 #> 
 
@@ -22,7 +23,7 @@ Install-Module ps2exe
 Invoke-ps2exe "ShadowingSystrayIndicator.ps1" -noConsole
 #>
 
-$version = "2024.01.22.02"
+$version = "2024.12.10.01"
 
 $ConfirmPreference = 'None'
 $InformationPreference = 'Continue'
@@ -42,7 +43,7 @@ try { Stop-Transcript -ErrorAction SilentlyContinue } catch {}
 try {
 
     # if the EXE is already running, do not start 2nd or more instances
-    if ( (Get-Process -Name 'ShadowingSystrayIndicator*' -ErrorAction Continue | Measure-Object).Count -ne 1 ) { 
+    if ( (Get-Process -Name 'ShadowingSystrayIndicator*' -ErrorAction Continue | Measure-Object).Count -ge 1 ) { 
        Write-Host "ShadowingSystrayIndicator is already running. Exiting."
        try { Stop-Transcript -ErrorAction SilentlyContinue } catch {}
        exit
