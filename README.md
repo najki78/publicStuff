@@ -18,6 +18,16 @@ Related article on LinkedIn: [Automatically resolving duplicate PC names in Intu
 
 Related article on LinkedIn: [Scheduling restart after Windows Update at the exact time](https://www.linkedin.com/pulse/scheduling-restart-after-windows-update-exact-time-%25C4%25BEubo%25C5%25A1-nikol%25C3%25ADni-pptbe/?trackingId=1BQ1G%2B%2F8S9C8rENcdJokQg%3D%3D)
 
+
+## Intune Remediations
+### [Clean up the System Reserved/EFI partition](https://github.com/najki78/publicStuff/tree/main/Intune%20Remediations/Cleanup%20System%20Reserved%20Partition)
+
+* Detection script to detect and report on the System Reserved/EFI partition, including free space, for Windows 11 upgrade readiness. The script mounts the partition if necessary, gathers partition details, and outputs results in JSON format for use with Intune Remediations.
+
+* Remediation script to clean up the System Reserved/EFI partition on Windows 11. The script removes non-English boot locales, unnecessary fonts, temporary and backup files, and moves HP BIOS and firmware files to C:\Windows\Temp\HPfiles, logging all actions and handling partition mounting/unmounting.
+
+Related article on LinkedIn: [Freeing Up Space on the System Reserved Partition](https://www.linkedin.com/pulse/freeing-up-space-system-reserved-partition-%25C4%25BEubo%25C5%25A1-nikol%25C3%25ADni-6we7e)
+
 ## Shadowing (Remote desktop services shadowing)
 
 ## Go to [najki's Wiki](https://github.com/najki78/publicStuff/wiki) for more details:
